@@ -116,20 +116,20 @@ public class Game implements Runnable{
     */
    protected void update(int deltaTime){
 	   
-	  /* 
+	  
       x += deltaTime * 0.1;
       while(x > 500){
          x -= 500;
       }
       
-      */
+      
    }
    
    /**
     * Rewrite this method for your game
     */
    protected void render(Graphics2D g){
-      //g.fillRect((int)x, 0, 200, 200);
+      g.fillRect((int)x, 0, 200, 200);
 	   
       Color red = new Color(255, 0, 0);
       Color green = new Color(0, 255, 0);
@@ -145,10 +145,11 @@ public class Game implements Runnable{
       
       i = randomNum;
       
-      g.setColor(red);
-      g.fillRect(i*20, j, 20, 20);
+      //g.setColor(red);
+      //g.fillRect(i*20, j, 20, 20);
     
-      running = false;
+      //Remove this to get the program to keep rendering
+      //running = false;
       
       //Generate a grid
       /*
@@ -167,10 +168,10 @@ public class Game implements Runnable{
     	  temp = red;
     	  red = green;
     	  green = temp;
-    	  
+    	
            
       }
-      */
+*/      
       
    }
    
