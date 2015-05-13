@@ -2,6 +2,7 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferStrategy;
 
@@ -21,7 +22,12 @@ public class Game implements Runnable{
    JFrame frame;
    Canvas canvas;
    BufferStrategy bufferStrategy;
-
+   private Rectangle rect;
+   boolean[][] grid;
+   int num_yellow;
+   int num_green;
+   int num_red;
+   
    
    public Game(){
       frame = new JFrame("Basic Game");
@@ -55,6 +61,26 @@ public class Game implements Runnable{
       bufferStrategy = canvas.getBufferStrategy();
       
       canvas.requestFocus();
+      
+      //////////
+      rect = new Rectangle(300,300,300,300);
+      
+      grid = new boolean[20][20];
+      
+      for(int i =0;i<20;i++)
+      {
+     	 for(int j = 0;j<20;j++)
+     	 {
+     		 grid[i][j] = false;
+     	 }
+     	 
+     	 
+      }
+      
+      num_yellow = 0;
+      num_green = 0;
+      num_red = 0;
+
    }
    
         
@@ -116,12 +142,12 @@ public class Game implements Runnable{
     */
    protected void update(int deltaTime){
 	   
-	  
+	  /*
       x += deltaTime * 0.1;
       while(x > 500){
          x -= 500;
       }
-      
+      */
       
    }
    
@@ -129,21 +155,66 @@ public class Game implements Runnable{
     * Rewrite this method for your game
     */
    protected void render(Graphics2D g){
-      g.fillRect((int)x, 0, 200, 200);
+	   
+	 
+      //g.fillRect((int)x, 0, 200, 200);
 	   
       Color red = new Color(255, 0, 0);
       Color green = new Color(0, 255, 0);
+      Color blue = new Color(0, 0, 255);
+      g.setColor(green);
+      
+      //g.fill(rect);
       Color temp;
       
-      int i,j=0;
-      
+      int i,j=0;    
       Random rand = new Random();
-
       // nextInt is normally exclusive of the top value,
       // so add 1 to make it inclusive
-      int randomNum = rand.nextInt((20 - 0) + 1) + 0;
-      
+      int randomNum = rand.nextInt((19 - 0) + 1) + 0;    
       i = randomNum;
+      randomNum = rand.nextInt((19 - 0) + 1) + 0;
+      j = randomNum;
+      
+      //Gets a random place on the grid, fills in a red, and updates grid
+      if(grid[i][j] == false)
+      {
+    	  g.setColor(red);
+          g.fillRect(i*20, j*20, 20, 20);
+          grid[i][j] = true;
+    	  
+      }
+    		
+      
+      randomNum = rand.nextInt((19 - 0) + 1) + 0;    
+      i = randomNum;
+      randomNum = rand.nextInt((19 - 0) + 1) + 0;
+      j = randomNum;
+      
+      System.out.println("hgell");
+      if(grid[i][j] == false)
+      {
+    	  g.setColor(green);
+          g.fillRect(i*20, j*20, 20, 20);
+          grid[i][j] = true;
+    	  
+      }
+      
+      randomNum = rand.nextInt((19 - 0) + 1) + 0;    
+      i = randomNum;
+      randomNum = rand.nextInt((19 - 0) + 1) + 0;
+      j = randomNum;
+      
+      if(grid[i][j] == false)
+      {
+    	  g.setColor(blue);
+          g.fillRect(i*20, j*20, 20, 20);
+          grid[i][j] = true;
+    	  
+      }
+      
+      
+      
       
       //g.setColor(red);
       //g.fillRect(i*20, j, 20, 20);
@@ -171,7 +242,7 @@ public class Game implements Runnable{
     	
            
       }
-*/      
+      */
       
    }
    

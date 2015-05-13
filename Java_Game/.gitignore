@@ -1,2 +1,10 @@
 /Game.class
 /Game$MouseControl.class
+/Moving.class
+/MovingScaling.class
+/Surface$MovingAdapter.class
+/Surface$ScaleHandler.class
+/Surface$ZEllipse.class
+/Surface$ZRectangle.class
+/Surface.class
+/MovingScaling$1.class
