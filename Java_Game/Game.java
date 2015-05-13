@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferStrategy;
 
@@ -28,9 +29,25 @@ public class Game implements Runnable{
    int num_green;
    int num_red;
    
+   protected JButton b1, b2, b3;
+   
    
    public Game(){
       frame = new JFrame("Basic Game");
+      
+      ButtonMethods button_methods = new ButtonMethods();    
+      JButton b1 = button_methods.create_button(frame);
+      b1.setBounds(200, 200, 100, 50);
+      
+      //Not really working
+      ButtonMethods button_methods2 = new ButtonMethods();    
+      JButton b2 = button_methods.create_button(frame);
+      b2.setBounds(0, 0, 100, 50);
+      
+      
+      
+      
+      
       
       /*
       JButton b1 = new JButton();
@@ -176,6 +193,11 @@ public class Game implements Runnable{
       randomNum = rand.nextInt((19 - 0) + 1) + 0;
       j = randomNum;
       
+      /**
+       * What i could do is, have a another grid array and fill it with numbers 
+       * that would tell me what color is in that spot...search grid for x amount
+       * after a user spends some "money" 
+       */
       //Gets a random place on the grid, fills in a red, and updates grid
       if(grid[i][j] == false)
       {
@@ -220,7 +242,7 @@ public class Game implements Runnable{
       //g.fillRect(i*20, j, 20, 20);
     
       //Remove this to get the program to keep rendering
-      //running = false;
+      running = false;
       
       //Generate a grid
       /*
