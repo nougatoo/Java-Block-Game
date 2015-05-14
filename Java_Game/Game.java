@@ -3,6 +3,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferStrategy;
@@ -15,7 +17,7 @@ import java.math.*;
 import java.util.Random;
 
 
-public class Game implements Runnable{
+public class Game implements Runnable, ActionListener{
    
    final int WIDTH = 1000;
    final int HEIGHT = 700;
@@ -30,12 +32,25 @@ public class Game implements Runnable{
    int num_red;
    //asdfasdfasdf
    
-   protected JButton b1, b2, b3;
+   protected JButton b1;
    
    
    public Game(){
       frame = new JFrame("Basic Game");
       
+      b1 = new JButton();
+      frame.add(b1);
+      b1.setSize(100,30);
+      b1.setVisible(true);
+      b1.setText("HelloWorld");
+      frame.add(b1);
+      
+      b1.addActionListener(this);
+      
+      
+      /**
+       * Button Stuff
+       
       ButtonMethods button_methods = new ButtonMethods();    
       JButton b1 = button_methods.create_button(frame);
       b1.setBounds(200, 200, 100, 50);
@@ -44,7 +59,7 @@ public class Game implements Runnable{
       ButtonMethods button_methods2 = new ButtonMethods();    
       JButton b2 = button_methods.create_button(frame);
       b2.setBounds(0, 0, 100, 50);
-      
+      */
       
       
       
@@ -273,5 +288,11 @@ public class Game implements Runnable{
       Game ex = new Game();
       new Thread(ex).start();
    }
+
+@Override
+public void actionPerformed(ActionEvent arg0) {
+	// TODO Auto-generated method stub
+	
+}
 
 }
