@@ -1,5 +1,5 @@
 /**
- * game.java
+ * main.java
  * Created By: Brandon Brien
  * 
  * A game where users can buy things in order to get more money

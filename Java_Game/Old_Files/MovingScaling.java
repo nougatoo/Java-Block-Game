@@ -1,4 +1,6 @@
+package Old_Files;
 
+//import Surface2;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -11,6 +13,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -221,7 +224,7 @@ public class MovingScaling extends JFrame {
         
         setTitle("Moving and scaling");
 
-        add(new Surface2());
+        //add(new Surface2());
 
         setSize(300, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
