@@ -68,8 +68,8 @@ public class main extends JPanel implements ActionListener{
 
 	
 	final int WIDTH = 800;
-	final int HEIGHT = 800;
-	final int FIRST_BUTTON = 500;
+	final int HEIGHT = 600;
+	final int FIRST_BUTTON = 450;
 	
 	/**
 	 * Initialize game state (non graphics)
@@ -200,7 +200,7 @@ public class main extends JPanel implements ActionListener{
         lab1 = new JLabel();
         lab1.setText("Current money: $" + curr_str);
         lab1.setForeground(Color.WHITE);
-        lab1.setBounds(125, 410, 300, 100);
+        lab1.setBounds(125, 370, 300, 100);
         //lab1.setBounds(new Rectangle(new Point(125, 450), lab1.getPreferredSize()));
         test.add(lab1);
         
@@ -209,16 +209,20 @@ public class main extends JPanel implements ActionListener{
 		String lemon_price = Double.toString(prices[0]);
         lab2 = new JLabel("$" + lemon_price);
         lab2.setForeground(Color.WHITE);
-        lab2.setBounds(new Rectangle(new Point(150, FIRST_BUTTON), lab2.getPreferredSize()));
+        lab2.setSize(75, 25);
+        //lab2.setOpaque(true); //For Debugging
+        lab2.setLocation(135, FIRST_BUTTON);
         test.add(lab2);
+           
         
         //Adds a label for orange price 
 		String orange_price = Double.toString(prices[1]);
         lab3 = new JLabel("$" + orange_price);
         lab3.setForeground(Color.WHITE);
-        lab3.setBounds(new Rectangle(new Point(150, FIRST_BUTTON + 35), lab3.getPreferredSize()));
+        lab3.setSize(75, 25);
+        //lab3.setOpaque(true); //For debugging
+        lab3.setLocation(135, FIRST_BUTTON+35);
         test.add(lab3);
-        
         
 	}
 	
@@ -253,12 +257,13 @@ public class main extends JPanel implements ActionListener{
 		asdf.draw();	
 		asdf.drawLabels();
 		
+		/*
 		asdf.waitSeconds(1);	
 		asdf.showStats();
 		
 		asdf.waitSeconds(1);
 		asdf.showStats();
-		
+		*/
 
 		
 		
