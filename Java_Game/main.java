@@ -77,7 +77,7 @@ public class main extends JPanel implements ActionListener{
 	 */
 	public Boolean initialize()
 	 {
-		current_money = 1;
+		current_money = 10;
 		money_rate = 1;
 		System.out.println("Welcome to some shitty incremental game!!\n");
 		
@@ -167,8 +167,23 @@ public class main extends JPanel implements ActionListener{
 	
 	public void handlePress(int num_button)
 	{
-		//Do stuff to handle button
+		if(num_button == 1 (current_money >= prices[0]))
+		{
+			//Lemon choice
+			money_rate += 1;
+			current_money -= prices[0];
+			prices[0] = Math.pow(prices[0], 1.1);
+			fruit_count[0] += 1;
+			
+			updateLabels();
+		}
 		
+	}
+	
+	public void updateLables()
+	{
+		String curr_str = Double.toString(current_money);
+        lab1.setText("Current money: $" + curr_str);
 	}
 	
 	public void drawButtons()
@@ -198,6 +213,7 @@ public class main extends JPanel implements ActionListener{
         //Adds a label for current money
 		String curr_str = Double.toString(current_money);
         lab1 = new JLabel();
+        System.out.println(current_money);
         lab1.setText("Current money: $" + curr_str);
         lab1.setForeground(Color.WHITE);
         lab1.setBounds(125, 370, 300, 100);
@@ -224,15 +240,6 @@ public class main extends JPanel implements ActionListener{
         lab3.setLocation(135, FIRST_BUTTON+35);
         test.add(lab3);
         
-	}
-	
-	/*
-	 * Testing whether or not i can update the labels properly
-	 */
-	public void testUpdate()
-	{
-		lab3.setText("asdf");
-		
 	}
 	
 	
