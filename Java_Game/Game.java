@@ -11,6 +11,7 @@ import java.awt.image.BufferStrategy;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import java.math.*;
@@ -19,9 +20,9 @@ import java.util.Random;
 
 public class Game implements Runnable, ActionListener{
    
-   final int WIDTH = 1000;
-   final int HEIGHT = 700;
-   
+   final int WIDTH = 800;
+   final int HEIGHT = 800;
+   final int FIRST_BUTTON = 500;
    JFrame frame;
    Canvas canvas;
    BufferStrategy bufferStrategy;
@@ -32,51 +33,46 @@ public class Game implements Runnable, ActionListener{
    int num_red;
    //asdfasdfasdf
    
-   protected JButton b1;
+   protected JButton b1, b2;
    
    
    public Game(){
       frame = new JFrame("Basic Game");
       
-      b1 = new JButton();
-      frame.add(b1);
-      b1.setSize(100,30);
-      b1.setVisible(true);
-      b1.setText("HelloWorld");
-      frame.add(b1);
-      
-      b1.addActionListener(this);
-      
-      
-      /**
-       * Button Stuff
-       
-      ButtonMethods button_methods = new ButtonMethods();    
-      JButton b1 = button_methods.create_button(frame);
-      b1.setBounds(200, 200, 100, 50);
-      
-      //Not really working
-      ButtonMethods button_methods2 = new ButtonMethods();    
-      JButton b2 = button_methods.create_button(frame);
-      b2.setBounds(0, 0, 100, 50);
-      */
-      
-      
-      
-      
-      
-      /*
-      JButton b1 = new JButton();
-      b1.setSize(200,50);
-      b1.setVisible(true);
-      b1.setText("HelloWorld");
-      frame.add(b1);
-      */
-      
+     
+      //Creating the panel
+      //JPanel panel = new JPanel();
       JPanel panel = (JPanel) frame.getContentPane();
-      panel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
-      panel.setLayout(null);
+      panel.setPreferredSize(new Dimension(800, 800));
+      panel.setBackground(Color.BLACK);
+      //panel.setLayout(null);
       
+      
+      //Button 1
+      b1 = new JButton();
+      panel.add(b1);
+      b1.setBounds(15,FIRST_BUTTON, 100, 25);
+      b1.setVisible(true);
+      b1.setText("Lemons");
+      panel.add(b1);
+      b1.addActionListener(this);
+      b1.setActionCommand("change");
+      
+      //Button 2
+      b2 = new JButton();
+      panel.add(b2);
+      b2.setBounds(15, FIRST_BUTTON+35,100,25);
+      b2.setVisible(true);
+      b2.setText("Oranges");
+      panel.add(b2);     
+      b2.addActionListener(this);
+      
+      
+      JLabel label1 = new JLabel("asdf");
+      panel.add(label1);
+      
+      
+      //Creating the canvas
       canvas = new Canvas();
       canvas.setBounds(0, 0, WIDTH, HEIGHT);
       canvas.setIgnoreRepaint(true);
@@ -95,7 +91,13 @@ public class Game implements Runnable, ActionListener{
       
       canvas.requestFocus();
       
-      //////////
+    
+      
+
+      
+      
+      ///////////////////
+      
       rect = new Rectangle(300,300,300,300);
       
       grid = new boolean[20][20];
@@ -197,6 +199,15 @@ public class Game implements Runnable, ActionListener{
       Color blue = new Color(0, 0, 255);
       g.setColor(green);
       
+      
+      //How to add a label
+      int x = 50;
+      String asdf = Integer.toString(x);
+      g.drawString(asdf, 100, 100);
+      g.drawString(asdf, 108, 100);
+      
+     
+      
       //g.fill(rect);
       Color temp;
       
@@ -290,8 +301,13 @@ public class Game implements Runnable, ActionListener{
    }
 
 @Override
-public void actionPerformed(ActionEvent arg0) {
-	// TODO Auto-generated method stub
+public void actionPerformed(ActionEvent e) {
+	
+	//Could have a method for each button that handles each case and this method will just send the program to that place
+	if("change".equals(e.getActionCommand()))
+	{
+		b1.setText("asdf");
+	}
 	
 }
 

@@ -221,7 +221,7 @@ public class MovingScaling extends JFrame {
         
         setTitle("Moving and scaling");
 
-        add(new Surface());
+        add(new Surface2());
 
         setSize(300, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
