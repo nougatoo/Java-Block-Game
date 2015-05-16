@@ -5,15 +5,22 @@
  * A game where users can buy things in order to get more money
  * Basically a copy of adventure capitalist
  * 
- * Instead of money a user will use blocks to buy thigns
+ * Blocks are used to purchase special upgrades
+ * hopefully they can be brought up in a menu (the choices)
  * 
- * TODO: Just  finished learning how to update the current money for each internval
- * 		 (can change time later, at 1 second now). that number needs to be rounded 
- *  	 when it's calculated to the nearest hundreth. 
- *  
- *  	- Next thing should be getting the buttons to work like the sample game that i made.
- *  	  Pretty much want the sample game to be complete before i start working with the block
- *  	  side of things.
+ * 
+ * 
+ * TODO next:
+ * 	- Add a label to show how many yellow blocks that we we have
+ *  - Decide how i want to handle when i no longer need yellow blocks
+ *  		- Maybe use the same alg i did to color everything yellow
+ *  		  but instead of going from 0 -> 1 in grid check for 1 and then
+ *  		  go to two?
+ * 
+ *  Long term TODO: 
+ *   - Be able to save the game state (into a file) and then have the user
+ *     have the option to load the game back up when they are done.
+ *     
  * Last edited: May 15th, 2015
  */
 
@@ -42,29 +49,40 @@ import javax.swing.JPanel;
 
 
 public class main extends JPanel implements ActionListener{
+	
+	private Utilities utility;
 
 	//Graphic attributes
 	private JFrame frame;
 	private JPanel panel;
-	private JButton b1, b2;
-	private JLabel lab1, lab2, lab3;
+	private JButton lemon_button, orange_button;
+	private JLabel currMon_label, lemonP_label, orangeP_label, currRate_label, totalMon_label;
+	private JLabel numLemon_label, numOrange_label;
 	private Canvas canvas;
 	private Surface2 test;
+	private int numYellow;
+	private int drawYellow_break;
+	private boolean gridFull;
+	private final int MAX_GRID_NUM = 400;
 	
 	//Non-Graphics Attributes
 	private double current_money;
 	private double money_rate;
+	private double total_money_made;
+	
 	
 	/*
 	 * 0 = Lemons
-	 * 1 = Apples
-	 * 2 = Oranges
+	 * 1 = Oranges
 	 */
 	private double[] prices = new double[3];
+	private double[] rates = new double[2]; //Lemons -> oranges ...etc
 	private int[] fruit_count = new int[3];
+	private int[][] grid = new int[20][20];
 	private double start_time;
 	private double end_time;
 	private double difference;
+	private DecimalFormat df2 = new DecimalFormat("###.##");
 
 	
 	final int WIDTH = 800;
@@ -77,14 +95,37 @@ public class main extends JPanel implements ActionListener{
 	 */
 	public Boolean initialize()
 	 {
+		utility = new Utilities();
 		current_money = 10;
 		money_rate = 1;
+		total_money_made = current_money;
 		System.out.println("Welcome to some shitty incremental game!!\n");
+		
+		//Sets up some graphics things
+		drawYellow_break = 0;
 		
 		//Sets up prices
 		prices[0] = 2; //Lemon price
 		prices[1] = 10; //Apple price
 		prices[2] = 20; //Orange price
+		
+		rates[0] = 1;
+		rates[1] = 2;
+		
+		fruit_count[0] = 0;
+		fruit_count[1] = 0;
+		
+		numYellow = 0;
+		gridFull = false; //The grid is full if all the colored blocks add up to maxgrid num
+		
+		//Initializes our grid to zero
+		for(int i = 0;i<20;i++)
+		{
+			for(int j = 0;j<20;j++)
+			{
+				grid[i][j]=0;
+			}
+		}
 			
 		//Gets current time to so we know how much to add later when we want to calculate
 		//how much the user has made
@@ -94,29 +135,82 @@ public class main extends JPanel implements ActionListener{
 	 }
 	
 	/**
-	 * Shows all the users stats (problay don't relaly need it in this form for later)
+	 * Does all the time interval calculations to add to current and total money
 	 */
 	public void showStats()
 	{
+		String temp;
+		int yellowBreakpoint;
+		int numToColor;
+		int colored = 0;
 
 		//Going to calculate how much money the user has made since we last checked 
 		end_time = System.currentTimeMillis();
 		difference = end_time-start_time;
 		start_time = System.currentTimeMillis();
 		current_money += money_rate*(difference/1000);
+		total_money_made += money_rate*(difference/1000);
+		
+		//Draw a yellow block every $100 earned, so if money made / 100 is
+		// not equal to current break then draw a yellow cube at some random point
+		
+		//Can probably just have a one method for this later instead of having one of these blocks
+		// per color
+		yellowBreakpoint = (int)(total_money_made/100);
+		if(yellowBreakpoint > drawYellow_break)
+		{
+			int i,j;
+			
+			numToColor = yellowBreakpoint - drawYellow_break;
+			if((numToColor + numYellow) > MAX_GRID_NUM) //CHANGE WHEN ADDING MORE FRUIT
+			{
+				numToColor = MAX_GRID_NUM - numYellow;
+			}
+			
+			if (isGridFull() == false)
+			{
+				
+				do{
+					i = utility.getRandInt(19, 0);
+					j = utility.getRandInt(19, 0);
+					
+		        	if(grid[i][j] == 0)
+		        	{
+			        	grid[i][j] = 1;
+			        	colored++;
+			        	numYellow++;
+		        	}
+		        
+				}while(grid[i][j] == 0 || (colored < numToColor));
+				
+		        test.repaint();
+	
+				drawYellow_break = yellowBreakpoint;
+			}//End of if statement
+		}
 		
 		//Rounds to the nearest 2
-		DecimalFormat df2 = new DecimalFormat("###.##");
-        current_money = Double.valueOf(df2.format(current_money));
-        
+		current_money = Double.valueOf(df2.format(current_money));
         
         //Updates our current amount of money
 		String curr_str = Double.toString(current_money);
-        lab1.setText("Current money: $" + curr_str);
+        currMon_label.setText("Current money: $" + curr_str);
+        
+        //Updates the total amount of money made
+		total_money_made = Double.valueOf(df2.format(total_money_made));
+		temp = Double.toString(total_money_made);
+	    totalMon_label.setText("Total money made: $" + temp);
+	    
+	}
+	
+	private boolean isGridFull(){
 		
-		//System.out.printf("You currently have: $" + "%.2f" + " in your bank acccount\n", current_money );
-		//System.out.println("And you get: $" + money_rate + " per second\n");
+		int size;
 		
+		//Need to add up all the colors here 
+		size = numYellow;
+		
+		return (size >= MAX_GRID_NUM);
 	}
 	
 	
@@ -133,11 +227,14 @@ public class main extends JPanel implements ActionListener{
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	
 		//Sets up the panel
-		test = new Surface2();
+		test = new Surface2(grid);
 		test.setLayout(null);
 		test.setBackground(Color.BLACK);
 		
+		
+		
         frame.add(test);
+        
               
 		drawButtons();
 				
@@ -154,12 +251,10 @@ public class main extends JPanel implements ActionListener{
 		if("lemon".equals(e.getActionCommand()))
 		{
 			button = 1;
-			b1.setText("Hello");
 		}
 		else if("orange".equals(e.getActionCommand()))
 		{
 			button = 2;
-			b2.setText("Hello");
 		}
 		
 		handlePress(button);
@@ -167,110 +262,165 @@ public class main extends JPanel implements ActionListener{
 	
 	public void handlePress(int num_button)
 	{
-		if(num_button == 1 (current_money >= prices[0]))
+		int choice;
+		choice = num_button-1;
+		if((current_money >= prices[choice]))
 		{
 			//Lemon choice
-			money_rate += 1;
-			current_money -= prices[0];
-			prices[0] = Math.pow(prices[0], 1.1);
-			fruit_count[0] += 1;
+			money_rate += rates[choice];
+			current_money -= prices[choice];
+			prices[choice] = Math.pow(prices[choice], 1.1);
+			fruit_count[choice] += 1;
 			
 			updateLabels();
+			updatePrice(choice);
+			
 		}
 		
 	}
 	
-	public void updateLables()
+	/*
+	 * Updates fruit price, and number of them lables
+	 */
+	public void updatePrice(int choice)
 	{
-		String curr_str = Double.toString(current_money);
-        lab1.setText("Current money: $" + curr_str);
+		//A place holder string just to show price
+		String temp;
+		JLabel fruit, fruit_num;
+		
+		prices[choice] = Double.valueOf(df2.format(prices[choice]));
+		temp = Double.toString(prices[choice]);
+		
+		if(choice == 0)
+		{
+			//Could just fill these into an array and access the array instead
+			fruit = lemonP_label;
+			fruit_num = numLemon_label;
+		}
+		else //have to make this else if when i add more fruit
+		{
+			fruit = orangeP_label;
+			fruit_num = numOrange_label;
+		}
+	    fruit.setText("$" + temp);
+	    
+	    temp = Integer.toString(fruit_count[choice]);
+	    fruit_num.setText("[ " + temp + " ]");
+	    
 	}
 	
+	/*
+	 * Updates current money, money rate
+	 */
+	public void updateLabels()
+	{	
+		//A place holder string used for display
+		String temp;
+		
+		current_money = Double.valueOf(df2.format(current_money));
+		temp = Double.toString(current_money);
+	    currMon_label.setText("Current money: $" + temp);
+	   
+	    //change to rate label
+		money_rate = Double.valueOf(df2.format(money_rate));
+		temp = Double.toString(money_rate);
+	    currRate_label.setText("Current money rate: $" + temp);
+	}
+	
+
+
 	public void drawButtons()
 	{
-        //Button 1
-        b1 = new JButton();
-        test.add(b1);
-        b1.setBounds(15,FIRST_BUTTON, 100, 25);
-        b1.setVisible(true);
-        b1.setText("Lemons");
-        b1.addActionListener(this);
-        b1.setActionCommand("lemon");
-        
-        //Button 2
-        b2 = new JButton();
-        test.add(b2);
-        b2.setBounds(15, FIRST_BUTTON+35,100,25);
-        b2.setVisible(true);
-        b2.setText("Oranges");  
-        b2.addActionListener(this);
-        b2.setActionCommand("orange");
+	    /*
+	     * Button to buy lemons
+	     * On press: buys a lemon and updates all things to show that
+	     */
+	    lemon_button = new JButton();
+	    test.add(lemon_button);
+	    lemon_button.setBounds(15,FIRST_BUTTON, 100, 25);
+	    lemon_button.setVisible(true);
+	    lemon_button.setText("Lemons");
+	    lemon_button.addActionListener(this);
+	    lemon_button.setActionCommand("lemon");
+	    
 
-	}
+	    /*
+	     * Button to buy oranges
+	     * On press: buys a orange and updates all things to show that
+	     */
+	    orange_button = new JButton();
+	    test.add(orange_button);
+	    orange_button.setBounds(15, FIRST_BUTTON+35,100,25);
+	    orange_button.setVisible(true);
+	    orange_button.setText("Oranges");  
+	    orange_button.addActionListener(this);
+	    orange_button.setActionCommand("orange");
 	
+	}
+
+	/*
+	 * Makes calls to the create_label function in the utilties class to create
+	 * all the labels needed for the game
+	 */
 	public void drawLabels()
 	{
-        //Adds a label for current money
-		String curr_str = Double.toString(current_money);
-        lab1 = new JLabel();
-        System.out.println(current_money);
-        lab1.setText("Current money: $" + curr_str);
-        lab1.setForeground(Color.WHITE);
-        lab1.setBounds(125, 370, 300, 100);
-        //lab1.setBounds(new Rectangle(new Point(125, 450), lab1.getPreferredSize()));
-        test.add(lab1);
+		String temp; 
+
+        //Creates a label for total money made
+        temp = Double.toString(total_money_made);
+        totalMon_label = utility.create_label(125, 350, "Total Money Made: $" + temp, 170, 25, Color.WHITE);
+        test.add(totalMon_label);
+
+        //Creates a label for the current money made
+        temp = Double.toString(current_money);
+        currMon_label = utility.create_label(125, 400, "Current money: $" + temp, 160, 25, Color.WHITE);
+        test.add(currMon_label);              
+    
+        //Creates a label for the current money rate
+        temp = Double.toString(money_rate);
+        currRate_label = utility.create_label(125, 375, "Current money rate: $" + temp, 160, 25, Color.WHITE);
+        test.add(currRate_label);              
+
+        //Creates a label for the price of lemons
+        temp = Double.toString(prices[0]);
+        lemonP_label = utility.create_label(160, FIRST_BUTTON, "$" + temp, 75, 25, Color.WHITE);
+        test.add(lemonP_label);
         
+        //Creates a label for the number of lemons
+        temp = Integer.toString(fruit_count[0]);
+        numLemon_label = utility.create_label(120, FIRST_BUTTON-5, "[ " + temp + " ]", 30, 30, Color.WHITE);
+        test.add(numLemon_label);
         
-        //Adds a label for lemon price 
-		String lemon_price = Double.toString(prices[0]);
-        lab2 = new JLabel("$" + lemon_price);
-        lab2.setForeground(Color.WHITE);
-        lab2.setSize(75, 25);
-        //lab2.setOpaque(true); //For Debugging
-        lab2.setLocation(135, FIRST_BUTTON);
-        test.add(lab2);
-           
-        
-        //Adds a label for orange price 
-		String orange_price = Double.toString(prices[1]);
-        lab3 = new JLabel("$" + orange_price);
-        lab3.setForeground(Color.WHITE);
-        lab3.setSize(75, 25);
-        //lab3.setOpaque(true); //For debugging
-        lab3.setLocation(135, FIRST_BUTTON+35);
-        test.add(lab3);
+        //Creates a label for the price of oranges
+        temp = Double.toString(prices[1]);
+        orangeP_label = utility.create_label(160, FIRST_BUTTON+35, "$" + temp, 75, 25, Color.WHITE);
+        test.add(orangeP_label);
+                         
+        //Creates a label for the number of oranges
+        temp = Integer.toString(fruit_count[1]);
+        numOrange_label = utility.create_label(120, FIRST_BUTTON+30, "[ " + temp + " ]", 30, 30, Color.WHITE);
+        test.add(numOrange_label);         
         
 	}
 	
 	
-	//Maybe put this into a utility class that just has some random things to use
-	public void waitSeconds(int seconds)
-	{
-		try {
-			Thread.sleep(seconds*1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	
-	}
+
 	public static void main(String[] args){
 		
-		main asdf = new main();
-		asdf.initialize();
-		//asdf.showStats();
+		main gameState = new main(); //New game
+		Utilities util = new Utilities(); //For non-game functions
+		gameState.initialize();
 
-		asdf.draw();	
-		asdf.drawLabels();
+		gameState.draw();	
+		gameState.drawLabels();
 		
-		/*
-		asdf.waitSeconds(1);	
-		asdf.showStats();
-		
-		asdf.waitSeconds(1);
-		asdf.showStats();
-		*/
+		for(int i=0;i<1000;i++)
+		{
+
+			util.waitMili(123);	
+			gameState.showStats();
+				
+		}
 
 		
 		
@@ -281,4 +431,5 @@ public class main extends JPanel implements ActionListener{
 	}
 
 }
+
 
