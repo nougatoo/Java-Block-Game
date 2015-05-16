@@ -43,7 +43,7 @@ public class Utilities {
 	public int getRandInt(int max, int min)
 	{
         Random rand = new Random();
-        int randomNum = rand.nextInt((max - min) + 1) + 0;    
+        int randomNum = rand.nextInt(((max-1) - min) + 1) + 0;    
         
         return randomNum;
 	}

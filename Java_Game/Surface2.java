@@ -1,6 +1,8 @@
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
@@ -23,8 +25,24 @@ class Surface2 extends JPanel implements ActionListener {
     	squareGrid= grid;
     	
 	}
+    
+    /*
+     * Draws little indicator squares besides the label that 
+     * shows how many blocks are of each color there are
+     */
+    private void drawBlockLabelColors(Graphics g)
+    {
+    	//x should stay the same, y is 8 higher than label y
+    	//Add more colors later
+    	g.setColor(Color.YELLOW);
+    	g.fillRect(480, 109, 10, 10); 
+    	g.setColor(Color.ORANGE);
+    	g.fillRect(480, 149, 10, 10);
+    }
 
 	private void doDrawing(Graphics g) {
+		
+		drawBlockLabelColors(g);
 
     	g.setColor(Color.BLUE);
     	g.fillRect(0, 0, 10, 10);
@@ -36,24 +54,31 @@ class Surface2 extends JPanel implements ActionListener {
     		{
     			if(squareGrid[x][y] == 0)
     			{
-    				g.setColor(Color.WHITE);
+    				g.setColor(Color.BLACK);
     			}
     			else if(squareGrid[x][y] == 1)
     			{
     				g.setColor(Color.YELLOW);
     			}
+    			else if(squareGrid[x][y] == 2)
+    			{
+    				g.setColor(Color.ORANGE);
+    			}
+    			else if(squareGrid[x][y] == -1)
+    			{
+    				g.setColor(Color.BLUE);
+    			}
     	        
-    	        g.fillRect(x*15, y*15, 15, 15);
-    	    	
-    			
+    			 //The (15+2) can be changed to anything above 15 (will just increase spacing 
+    			 
+    	        g.fillRect(x*(15+2), y*(15+2), 15, 15); 
+    	        //g.fillRoundRect(x, y, width, height, arcWidth, arcHeight);
     		}
     	}
     	
   	  	//g.setColor(Color.RED);
   	  	//g.fillRect(i*20, j*20, 20, 20);
     	
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.drawString("Java 2D", 50, 50);
         
         //g.setColor(Color.WHITE);
     }
