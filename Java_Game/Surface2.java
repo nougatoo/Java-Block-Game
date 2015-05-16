@@ -13,6 +13,9 @@ import javax.swing.JPanel;
 class Surface2 extends JPanel implements ActionListener {
 
 	protected JButton b1, b2;
+	private final int BLOCK_SIZE_X = 15;
+	private final int BLOCK_SIZE_Y = 15;
+	private final int BLOCK_SPACING = 2;
 	/*
 	 * 0 = White (for now)
 	 * 1 = Yellow
@@ -20,6 +23,7 @@ class Surface2 extends JPanel implements ActionListener {
 	 * etc...
 	 */
 	private int[][] squareGrid;
+	
     public Surface2(int[][] grid) {
 		
     	squareGrid= grid;
@@ -38,6 +42,8 @@ class Surface2 extends JPanel implements ActionListener {
     	g.fillRect(480, 109, 10, 10); 
     	g.setColor(Color.ORANGE);
     	g.fillRect(480, 149, 10, 10);
+    	g.setColor(Color.RED);
+    	g.fillRect(480, 189, 10, 10);
     }
 
 	private void doDrawing(Graphics g) {
@@ -64,6 +70,10 @@ class Surface2 extends JPanel implements ActionListener {
     			{
     				g.setColor(Color.ORANGE);
     			}
+    			else if(squareGrid[x][y] == 3)
+    			{
+    				g.setColor(Color.RED);
+    			}
     			else if(squareGrid[x][y] == -1)
     			{
     				g.setColor(Color.BLUE);
@@ -71,7 +81,7 @@ class Surface2 extends JPanel implements ActionListener {
     	        
     			 //The (15+2) can be changed to anything above 15 (will just increase spacing 
     			 
-    	        g.fillRect(x*(15+2), y*(15+2), 15, 15); 
+    	        g.fillRect(x*(BLOCK_SIZE_X+BLOCK_SPACING), y*(BLOCK_SIZE_Y+BLOCK_SPACING), BLOCK_SIZE_X, BLOCK_SIZE_Y); 
     	        //g.fillRoundRect(x, y, width, height, arcWidth, arcHeight);
     		}
     	}

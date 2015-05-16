@@ -11,12 +11,13 @@
  * 
  * 
  * TODO next:
- * 	- Add a label to show how many yellow blocks that we we have
+ * 	- Where i'm at with adding apple: just need to be able to upgrade orange into red
+ * 
  *  - Decide how i want to handle when i no longer need yellow blocks
  *  		- Maybe use the same alg i did to color everything yellow
  *  		  but instead of going from 0 -> 1 in grid check for 1 and then
  *  		  go to two?
- *  - Auto upgrade blocks when grid is full, reset grid
+ * 
  * 
  *  Long term TODO: 
  *   - Be able to save the game state (into a file) and then have the user
@@ -41,6 +42,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -61,21 +64,22 @@ public class main extends JPanel implements ActionListener{
 	private JFrame frame;
 	private JPanel panel;
 	
-	private JButton lemon_button, orange_button;
-	private JButton upgradeYBlocks_button, upgradeOBlocks_button;
+	private JButton lemon_button, orange_button, apple_button;
+	private JButton upgradeYBlocks_button, upgradeOBlocks_button, upgradeRBlocks_button;
 	
-	private JLabel currMon_label, lemonP_label, orangeP_label, currRate_label, totalMon_label;
-	private JLabel numLemon_label, numOranges_label; //Number of fruit purchased
-	private JLabel numYellow_label, numOrange_label; //Number of blocks generated label
+	private JLabel currMon_label, currRate_label, totalMon_label, lemonP_label, orangeP_label, appleP_label;
+	private JLabel numLemon_label, numOranges_label, numApple_label; //Number of fruit purchased
+	private JLabel numYellow_label, numOrange_label, numRed_label; //Number of blocks generated label
 	
 	private Canvas canvas;
 	private Surface2 test;
 	
-	private int[] numBlock = new int[2]; //Integer rep of all blocks
+	private int[] numBlock = new int[3]; //Integer rep of all blocks
 	private int numYellow; //Integer representation of number of blocks (colors)
 	private int drawYellow_break;
 	private boolean gridFull;
 	private final int MAX_GRID_NUM = 400;
+	private final int NUMBER_OF_COLORS = 3;
 	
 	//Non-Graphics Attributes
 	private double current_money;
@@ -88,10 +92,10 @@ public class main extends JPanel implements ActionListener{
 	 * 1 = Oranges
 	 */
 	private double[] prices = new double[3];
-	private double[] rates = new double[2]; //Lemons -> oranges ...etc
+	private double[] rates = new double[3]; //Lemons -> oranges ...etc
 	private int[] fruit_count = new int[3];
 	private int[][] grid = new int[20][20];
-	private int[] breakpoint = new int[2]; //Increase when i add more things than lemons are oranges
+	private int[] breakpoint = new int[3]; //Increase when i add more things than lemons are oranges
 	private double start_time;
 	private double end_time;
 	private double difference;
@@ -117,19 +121,25 @@ public class main extends JPanel implements ActionListener{
 		//Initial breakpoint for all colors of blocks is 0
 		breakpoint[0] = 0; //Lemons
 		breakpoint[1] = 0; //Oranges
+		breakpoint[2] = 0;
 		
 		//Sets up prices
 		prices[0] = 2; //Lemon price
-		prices[1] = 10; //Apple price
-		prices[2] = 20; //Orange price
+		prices[1] = 10; //Orange price
+		prices[2] = 100; //Apple price
 		
 		rates[0] = 20;
 		rates[1] = 100;
+		rates[2] = 150;
 		
+		//Put these into loops so i don't have to do it manually when i add a fruit
 		fruit_count[0] = 0;
 		fruit_count[1] = 0;
+		fruit_count[2] = 0;
 		
 		numBlock[0] = 0;
+		numBlock[1] = 0;
+		numBlock[2] = 0;
 		gridFull = false; //The grid is full if all the colored blocks add up to maxgrid num
 		
 		//Initializes our grid to zero
@@ -156,7 +166,7 @@ public class main extends JPanel implements ActionListener{
 	public void showStats()
 	{
 		String temp;
-		int yellowBreakpoint, orangeBreakpoint;
+		int yellowBreakpoint, orangeBreakpoint, redBreakpoint;
 		int numToColor;
 		int colored = 0;
 
@@ -172,16 +182,39 @@ public class main extends JPanel implements ActionListener{
 		
 		//Can probably just have a one method for this later instead of having one of these blocks
 		// per color
-		yellowBreakpoint = (int)(total_money_made/10);
+		yellowBreakpoint = (int)(total_money_made/100);
 		orangeBreakpoint = (int)(total_money_made/1000);
-		if(yellowBreakpoint > breakpoint[0])
+		redBreakpoint = (int)(total_money_made/10000);
+		if(yellowBreakpoint > breakpoint[0] && (breakpoint[0]%100 != 9))
 		{
 			handleBreakPoint(yellowBreakpoint, 0, numBlock[0]);
 		}
-		if(orangeBreakpoint > breakpoint[1])
+		else if(breakpoint[0]%100 == 9 && (yellowBreakpoint>breakpoint[0]))
+		{
+
+			breakpoint[0]++;
+		}
+		
+		if(orangeBreakpoint > breakpoint[1] && (breakpoint[1]%10 != 9))
 		{
 			handleBreakPoint(orangeBreakpoint, 1, numBlock[1]);
 		}
+		else if(breakpoint[1]%100 == 9 && (orangeBreakpoint>breakpoint[1]))
+		{
+			breakpoint[1]++;
+		}
+		
+		if(redBreakpoint > breakpoint[2] && (breakpoint[2]%10 != 9))
+		{
+			System.out.println("asdfasdf");
+			handleBreakPoint(redBreakpoint, 2, numBlock[2]);
+		}
+		else if(breakpoint[2]%100 == 9 && (redBreakpoint>breakpoint[2]))
+		{
+			breakpoint[2]++;
+		}
+		
+		
 		
 		//Rounds to the nearest 2
 		current_money = Double.valueOf(df2.format(current_money));
@@ -210,9 +243,10 @@ public class main extends JPanel implements ActionListener{
 
 		
 		numToColor = currentColorBreak - breakpoint[breakPointIndex];
-		if((numToColor + numColor) > MAX_GRID_NUM) //CHANGE WHEN ADDING MORE FRUIT
+		if((numToColor + getNumBlocks()) >= MAX_GRID_NUM) //CHANGE WHEN ADDING MORE FRUIT ///DO GETSIZE
 		{
-			numToColor = MAX_GRID_NUM - numColor;
+			//numToColor = MAX_GRID_NUM - numColor;
+			handleFullGrid();
 		}
 		
 		if (isGridFull() == false)
@@ -234,14 +268,25 @@ public class main extends JPanel implements ActionListener{
 		        	colored++;
 		        	numBlock[breakPointIndex]++;
 	        	}
-	        
 			}while(grid[i][j] == 0 || (colored < numToColor));
 			
 	        test.repaint(); //Redraw grid 
 			breakpoint[breakPointIndex] = currentColorBreak; //Lets us know when we generate the next 100
 			updateBlockLabels(); //Update block label to show the blocks we just generated
 			
-		}//End of if statement
+		}
+
+	}
+	
+	public void handleFullGrid()
+	{
+		for(int i = 0;i<NUMBER_OF_COLORS;i++)
+		{
+			if(numBlock[i] >= 100)
+			{
+				upgradeBlocks(i);	
+			}
+		}
 	}
 	
 	private boolean isGridFull(){
@@ -252,6 +297,17 @@ public class main extends JPanel implements ActionListener{
 		size = numBlock[0] + numBlock[1];
 		
 		return (size >= MAX_GRID_NUM);
+	}
+	
+	private int getNumBlocks()
+	{
+		int totalBlocks = 0;
+		
+		for(int i=0;i<NUMBER_OF_COLORS;i++)
+		{
+			totalBlocks += numBlock[i];
+		}
+		return totalBlocks;
 	}
 	
 	
@@ -272,11 +328,9 @@ public class main extends JPanel implements ActionListener{
 		test.setLayout(null);
 		test.setBackground(Color.BLACK);
 		
-		
-		
+			
         frame.add(test);
-        
-              
+                 
 		drawButtons();
 				
         //Shows everything we need		
@@ -300,9 +354,20 @@ public class main extends JPanel implements ActionListener{
 			button = 2;
 			handlePress(button);
 		}
+		else if("apple".equals(e.getActionCommand()))
+		{
+			button = 3;
+			handlePress(button);
+		}
 		else if("upgradeYellow".equals(e.getActionCommand()))
 		{
 			block = 0;
+			upgradeBlocks(block);
+			
+		}
+		else if("upgradeOrange".equals(e.getActionCommand()))
+		{
+			block = 1;
 			upgradeBlocks(block);
 			
 		}
@@ -324,8 +389,9 @@ public class main extends JPanel implements ActionListener{
 		
 		raw_numBlocks_to_upgrade= numBlock[block];
 		numBlocks_to_upgrade = raw_numBlocks_to_upgrade/100; //This will have to change if we want different conversion rates instead of 100 per
-		numBlock[block] = numBlock[block] - (numBlocks_to_upgrade*100);
-		numBlock[block+1] = numBlock[block+1] + numBlocks_to_upgrade;
+		numBlock[block] = numBlock[block] - (numBlocks_to_upgrade*100); //100 blocks = 1 block of the next kind
+		numBlock[block+1] = numBlock[block+1] + numBlocks_to_upgrade; 
+		
 		updateBlockLabels();
 		//NOw...how to update grid
 		//I want to create an array that holds all the yellow points(after traversing through the
@@ -344,9 +410,23 @@ public class main extends JPanel implements ActionListener{
 				}
 			}
 			
-			//TODO: shuffle the array
+			//Pseudo shuffle of the locations of the array so that when we removed we don't always remove
+			//the first 100
+			int index;
+		    for (int i = (nextEmpty -1 ) - 1; i > 0; i--)
+		    {
+		      index = utility.getRandInt(nextEmpty-1, 0);
+		      // Simple swap
+		      Point a = findColors[index];
+		      findColors[index] = findColors[i];
+		      findColors[i] = a;
+		    }
 			
-		    
+		    /*
+		     * Takes the first 100 entries of the shuffle array (locations of colors) and decreases
+		     * their value by 1 and takes the last couple (number of colors above current colors) 
+		     * and increases their value by 1
+		     */
 		    for(int i=0;i<(numBlocks_to_upgrade*100);i++)
 			{
 				tempPoint = findColors[i];
@@ -360,31 +440,7 @@ public class main extends JPanel implements ActionListener{
 				}
 			}
 		    
-			/*
-			System.out.println(numBlocks_to_upgrade);
-			System.out.println(nextEmpty);
-			findColors.
-			int removed = 0;
-			//Reduces the number of blocks by 1, and on last (numBlocks_to_upgrade) just change the color
-			for(int i=0;i<(numBlocks_to_upgrade*100);i++)
-			{
-				randomNum = utility.getRandInt(nextEmpty-1, 0);
-				tempPoint = findColors[randomNum];
-				if(i < ((numBlocks_to_upgrade*100)-numBlocks_to_upgrade))
-				{
-					grid[tempPoint.x][tempPoint.y] -= 1;
-					removed ++;
-				}
-				else
-				{
-					grid[tempPoint.x][tempPoint.y] += 1;
-					removed++;
-				}
-			}
-			System.out.println(removed);
-			*/
-			
-			test.repaint();
+			test.repaint(); //Color the grid that we just changed
 		}//End of if statement	
 	}
 	
@@ -394,7 +450,7 @@ public class main extends JPanel implements ActionListener{
 		choice = num_button-1;
 		if((current_money >= prices[choice]))
 		{
-			//Lemon choice
+			//Fruit choice
 			money_rate += rates[choice];
 			current_money -= prices[choice];
 			prices[choice] = Math.pow(prices[choice], 1.1);
@@ -425,10 +481,15 @@ public class main extends JPanel implements ActionListener{
 			fruit = lemonP_label;
 			fruit_num = numLemon_label;
 		}
-		else //have to make this else if when i add more fruit
+		else if (choice == 1) //have to make this else if when i add more fruit
 		{
 			fruit = orangeP_label;
 			fruit_num = numOranges_label;
+		}
+		else
+		{
+			fruit = appleP_label;
+			fruit_num = numApple_label;
 		}
 	    fruit.setText("$" + temp);
 	    
@@ -466,6 +527,10 @@ public class main extends JPanel implements ActionListener{
 	    //Change Orange block label
 		temp = Integer.toString(numBlock[1]);
 	    numOrange_label.setText("Number of Orange Blocks: " + temp);
+	    
+	    //Change Red block label
+		temp = Integer.toString(numBlock[2]);
+	    numRed_label.setText("Number of Red Blocks: " + temp);
 		
 	}
 	
@@ -500,6 +565,19 @@ public class main extends JPanel implements ActionListener{
 	    orange_button.addActionListener(this);
 	    orange_button.setActionCommand("orange");
 	    
+	    /*
+	     * Button to buy apples
+	     * On press: buys a apples and updates all things to show that
+	     */
+	    apple_button = new JButton();
+	    test.add(apple_button);
+	    apple_button.setBounds(15, FIRST_BUTTON+70,100,25);
+	    apple_button.setVisible(true);
+	    apple_button.setText("Apple");  
+	    apple_button.addActionListener(this);
+	    apple_button.setActionCommand("apple");
+	    
+	    
 	    
 	    /*
 	     * Button to upgrade yellow blocks to orange
@@ -526,6 +604,19 @@ public class main extends JPanel implements ActionListener{
 	    upgradeOBlocks_button.setText("Upgrade!");
 	    upgradeOBlocks_button.addActionListener(this);
 	    upgradeOBlocks_button.setActionCommand("upgradeOrange");
+	    
+	    /*
+	     * Button to upgrade red blocks to purple
+	     * 
+	     */
+	    upgradeRBlocks_button = new JButton();
+	    test.add(upgradeRBlocks_button);
+	    upgradeRBlocks_button.setBounds(675, 185, 80,18); //y is 4 higher than lable y
+	    upgradeRBlocks_button.setFont(smallButtonFont);
+	    upgradeRBlocks_button.setVisible(true);
+	    upgradeRBlocks_button.setText("Upgrade!");
+	    upgradeRBlocks_button.addActionListener(this);
+	    upgradeRBlocks_button.setActionCommand("upgradeRed");
 	
 	}
 	
@@ -539,18 +630,22 @@ public class main extends JPanel implements ActionListener{
 
         //Creates a label for total money made
         temp = Double.toString(total_money_made);
-        totalMon_label = utility.create_label(125, 350, "Total Money Made: $" + temp, 170, 25, Color.WHITE);
+        totalMon_label = utility.create_label(125, 350, "Total Money Made: $" + temp, 250, 25, Color.WHITE);
         test.add(totalMon_label);
 
-        //Creates a label for the current money made
+        //Creates a label for the current money 
         temp = Double.toString(current_money);
-        currMon_label = utility.create_label(125, 400, "Current money: $" + temp, 160, 25, Color.WHITE);
+        currMon_label = utility.create_label(125, 400, "Current money: $" + temp, 250, 25, Color.WHITE);
         test.add(currMon_label);              
     
         //Creates a label for the current money rate
         temp = Double.toString(money_rate);
-        currRate_label = utility.create_label(125, 375, "Current money rate: $" + temp, 160, 25, Color.WHITE);
-        test.add(currRate_label);              
+        currRate_label = utility.create_label(125, 375, "Current money rate: $" + temp, 250, 25, Color.WHITE);
+        test.add(currRate_label);
+        
+        /*
+         * Fruit Labels
+         */
 
         //Creates a label for the price of lemons
         temp = Double.toString(prices[0]);
@@ -570,7 +665,21 @@ public class main extends JPanel implements ActionListener{
         //Creates a label for the number of oranges
         temp = Integer.toString(fruit_count[1]);
         numOranges_label = utility.create_label(120, FIRST_BUTTON+30, "[ " + temp + " ]", 30, 30, Color.WHITE);
-        test.add(numOranges_label);         
+        test.add(numOranges_label);      
+        
+        //Creates a label for the price of apples
+        temp = Double.toString(prices[2]);
+        appleP_label = utility.create_label(160, FIRST_BUTTON+70, "$" + temp, 75, 25, Color.WHITE);
+        test.add(appleP_label);
+        
+        //Creates a label for the number of apples
+        temp = Integer.toString(fruit_count[2]);
+        numApple_label = utility.create_label(120, FIRST_BUTTON+65, "[ " + temp + " ]", 30, 30, Color.WHITE);
+        test.add(numApple_label);
+        
+        /*
+         * Blocks Labels
+         */
         
         //Number of yellow blocks label
         temp = Integer.toString(numBlock[0]);
@@ -581,6 +690,14 @@ public class main extends JPanel implements ActionListener{
         temp = Integer.toString(numBlock[1]);
         numOrange_label = utility.create_label(500, 141, "Number of Orange Blocks: " + temp, 200, 25, Color.WHITE);
         test.add(numOrange_label);
+        
+        //Number of red blocks label
+        temp = Integer.toString(numBlock[1]);
+        numRed_label = utility.create_label(500, 181, "Number of Red Blocks: " + temp, 200, 25, Color.WHITE);
+        test.add(numRed_label);
+        
+        
+
 	}
 	
 	
