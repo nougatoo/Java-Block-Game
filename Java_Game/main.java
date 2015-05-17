@@ -317,11 +317,11 @@ public class main extends JPanel implements ActionListener{
 	
 	public void handleFullGrid()
 	{
-		for(int i = 0;i<NUMBER_OF_COLORS;i++)
+		for(int i = NUMBER_OF_COLORS;i>0;i--)
 		{
-			if(numBlock[i] >= 100)
+			if(numBlock[i-1] >= 100)
 			{
-				upgradeBlocks(i);	
+				upgradeBlocks(i-1);	
 			}
 		}
 		
@@ -443,7 +443,10 @@ public class main extends JPanel implements ActionListener{
 		raw_numBlocks_to_upgrade = numBlock[block];
 		numBlocks_to_upgrade = raw_numBlocks_to_upgrade/100; //This will have to change if we want different conversion rates instead of 100 per and lower in the function
 		
-		
+		System.out.println(block);
+		System.out.println(numBlock[block]);
+		System.out.println(getNumBlocks());
+		System.out.println();
 		
 		
 		numBlock[block] = numBlock[block] - (numBlocks_to_upgrade*100); //100 blocks = 1 block of the next kind
@@ -468,8 +471,6 @@ public class main extends JPanel implements ActionListener{
 					}
 				}
 			}
-			
-			System.out.println(nextEmpty);
 			
 			
 
@@ -502,7 +503,10 @@ public class main extends JPanel implements ActionListener{
 				tempPoint = findColors[i];
 				if(i < ((numBlocks_to_upgrade*100)-numBlocks_to_upgrade))
 				{
-					grid[findColors[i].x][findColors[i].y] += -1;
+					if(block == 0)
+						grid[findColors[i].x][findColors[i].y] += -1;
+					else
+						grid[findColors[i].x][findColors[i].y] = 0;;
 				}
 				else
 				{
@@ -536,7 +540,7 @@ public class main extends JPanel implements ActionListener{
 			 */
 			if(money_rate > 1000 && multiplier_changed==false)
 			{
-				//changeBlockGenMultiplier();
+				changeBlockGenMultiplier();
 			}
 			
 			
@@ -559,7 +563,7 @@ public class main extends JPanel implements ActionListener{
 	 *  - Might only want to have specific fruit multiplier changes, but be so hard
 	 *    to generate the later blocks
 	 *  - Add a pop up message to the user that tells them because it's about to get 
-	 *    harder to generate blocks they get some extra ones for free!
+	 *    harder to generate blocks but they get some extra ones for free!
 	 */
 	public void changeBlockGenMultiplier()
 	{
@@ -828,7 +832,7 @@ public class main extends JPanel implements ActionListener{
 		for(int i=0;i<100000;i++)
 		{
 
-			util.waitMili(300);	
+			util.waitMili(123);	
 			gameState.showStats();
 				
 		}
