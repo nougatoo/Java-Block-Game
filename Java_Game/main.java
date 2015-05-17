@@ -324,6 +324,8 @@ public class main extends JPanel implements ActionListener{
 				upgradeBlocks(i);	
 			}
 		}
+		
+
 	}
 	
 	private boolean isGridFull(){
@@ -442,9 +444,6 @@ public class main extends JPanel implements ActionListener{
 		numBlocks_to_upgrade = raw_numBlocks_to_upgrade/100; //This will have to change if we want different conversion rates instead of 100 per and lower in the function
 		
 		
-		System.out.println(raw_numBlocks_to_upgrade);
-		System.out.println(numBlock[block]);
-		System.out.println(numBlocks_to_upgrade + "\n");
 		
 		
 		numBlock[block] = numBlock[block] - (numBlocks_to_upgrade*100); //100 blocks = 1 block of the next kind
@@ -469,6 +468,8 @@ public class main extends JPanel implements ActionListener{
 					}
 				}
 			}
+			
+			System.out.println(nextEmpty);
 			
 			
 
