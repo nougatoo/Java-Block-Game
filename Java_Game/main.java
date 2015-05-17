@@ -14,12 +14,15 @@
  * 
  * 
  * TODO next:
- * 	- Fixing bug that is some where in upgradeBlocks
+ * 	- Reorganize code
+ * 		- get everything out of main and have separate game object
+ * 		- Clean up code (remove, old commented out code, removed all unused variables...etc) 
+ * 		- Added javadoc or comments for all methods that include input, assumptions, output
+ * 		- Maybe split up some of the functions into a GameFunctions object that will have
+ *        things like....update prices, updateMoney labels
+ * 			- this might require some things like frame to be static? idk, we'll have to see 
  * 
- *  - Decide how i want to handle when i no longer need yellow blocks
- *  		- Maybe use the same alg i did to color everything yellow
- *  		  but instead of going from 0 -> 1 in grid check for 1 and then
- *  		  go to two?
+ * - Add grapes!
  * 
  * 
  *  Long term TODO: 
@@ -29,7 +32,10 @@
  *   - Have a welcome screen that ask the users if they wanted to continue their game or 
  *     start a new one
  *     
- * Last edited: May 15th, 2015
+ *   - users spend their blocks on upgrades (maybe some upgrades require a certain amount of 
+ *     money per second to prevent abusing right before a break point
+ *     
+ * Last edited: May 17th, 2015
  */
 
 import java.awt.BorderLayout;
@@ -106,7 +112,14 @@ public class main extends JPanel implements ActionListener{
 	private int yellow_per_dollar, orange_per_dollar, red_per_dollar;
 	private int color_per_dollar_multiplier;
 	private boolean multiplier_changed = false;
-
+	private Point[] empty_Spots = new Point[400];
+	private int last_Empty = -1; //Index in empty_Spots that is the last empty (lets me know how many empty spots there are)
+	/*
+	 * yellow_multipliers.x is the money rate to change at
+	 * yellow_multipliers.y is the multiplier value
+	 */
+	private Point[] yellow_multipliers = new Point[5];
+	private int current_yellow_mult_index = 0;
 	
 	final int WIDTH = 800;
 	final int HEIGHT = 600;
@@ -160,13 +173,34 @@ public class main extends JPanel implements ActionListener{
 		{
 			for(int j = 0;j<20;j++)
 			{
-				grid[i][j]=0;
+				grid[i][j] = 0;
 			}
 		}
-			
+
+		/*
+		 * Initializes the entire empty_spots array
+		 */
+		for(int i = 0;i<400;i++)
+		{
+			empty_Spots[i] = new Point(0,0);				
+		}
+		
+		/*
+		 * Initializes the entire yellow_multipliers array
+		 * 1 by 1
+		 */
+		yellow_multipliers[0] = new Point(1000,1);
+		yellow_multipliers[1] = new Point(10000,10);
+		yellow_multipliers[2] = new Point(100000,100);
+		yellow_multipliers[3] = new Point(1000000,1000);
+		yellow_multipliers[4] = new Point(10000000,10000);
+
+		
 		//Gets current time to so we know how much to add later when we want to calculate
 		//how much the user has made
 		start_time = System.currentTimeMillis();
+		
+
 		 
 		return true;
 	 }
@@ -182,6 +216,7 @@ public class main extends JPanel implements ActionListener{
 		int yellowBreakpoint, orangeBreakpoint, redBreakpoint;
 		int numToColor;
 		int colored = 0;
+		int index;
 
 		//Going to calculate how much money the user has made since we last checked 
 		end_time = System.currentTimeMillis();
@@ -195,9 +230,10 @@ public class main extends JPanel implements ActionListener{
 		
 		//Can probably just have a one method for this later instead of having one of these blocks
 		// per color
-		yellowBreakpoint = (int)(total_money_made/(yellow_per_dollar*color_per_dollar_multiplier));
-		orangeBreakpoint = (int)(total_money_made/(orange_per_dollar*color_per_dollar_multiplier));
-		redBreakpoint = (int)(total_money_made/(red_per_dollar*color_per_dollar_multiplier));
+		index = current_yellow_mult_index; 
+		yellowBreakpoint = (int)(total_money_made/(yellow_per_dollar*yellow_multipliers[index].y));
+		orangeBreakpoint = (int)(total_money_made/(orange_per_dollar*yellow_multipliers[index].y));
+		redBreakpoint = (int)(total_money_made/(red_per_dollar*yellow_multipliers[index].y));
 		
 		/*
 		 * Yellow Breakpoint handling
@@ -255,6 +291,53 @@ public class main extends JPanel implements ActionListener{
 	}
 	
 	/*
+	 * Input: none
+	 * Work: - Scans the grid[][] array and records all the spots
+	 *       that have not been colored yet so that we have a list
+	 *       to pick from when the game needs to color a new square
+	 *       
+	 *       - then shuffles the array because we have no use for an array
+	 *       in order. DIdn't want to add another fuction because array shuffling
+	 *       is fairly exclusive to only two spots in the all game code
+	 *       
+	 */
+	public void updateEmptySpots()
+	{
+		last_Empty = -1;
+		for(int i = 0;i<20;i++)
+		{
+			for(int j = 0;j<20;j++)
+			{
+				if(grid[i][j] == 0)
+				{
+					last_Empty++;
+					empty_Spots[last_Empty].x = i;
+					empty_Spots[last_Empty].y = j;
+				}
+			}
+		}
+		
+	}
+	
+	private void shuffleEmptySpots()
+	{
+		/*
+		 * Pseudo shuffles the array 
+		 */
+		int index;
+		
+	    for (int i = (last_Empty); i > 0; i--)
+	    {
+	    	index = utility.getRandInt(last_Empty-1, 0);
+	    	// Simple swap
+	    	Point a = empty_Spots[index];
+	    	empty_Spots[index] = empty_Spots[i];
+	    	empty_Spots[i] = a;
+	    }
+	    
+	}
+	
+	/*
 	 * Each colored block has breakpoint, so every $x they earn a colored block of a certain
 	 * type. This function gets called when a breakpoint is reached, it does not check
 	 * whether we are at a break point
@@ -267,8 +350,7 @@ public class main extends JPanel implements ActionListener{
 
 		
 		numToColor = currentColorBreak - breakpoint[breakPointIndex];	
-		
-		
+				
 		if((numToColor + getNumBlocks()) >= MAX_GRID_NUM) //CHANGE WHEN ADDING MORE FRUIT ///DO GETSIZE
 		{
 			handleFullGrid();
@@ -276,37 +358,63 @@ public class main extends JPanel implements ActionListener{
 		
 		if (isGridFull() == false)
 		{
-			//Loop until we've created enough blocks for all the break points we passed
-			// or look when we generated a random block that was already taken
+			int x,y = 0;
+			
+			/*
+			 * We have an in-order array of points that we know are empty in grid
+			 * so we shuffle it and pick the last element (because it's shuffled) 
+			 * and color that square. Update accordingly.
+			 * 
+			 */
+			updateEmptySpots();
+			
+			do{	
+				/*
+				 * If there are two or less spots then there isn't a reason
+				 * to pick a random spot
+				 */
+				if(last_Empty > 1)
+				{
+					shuffleEmptySpots();
+				}
+				
+				x = empty_Spots[last_Empty].x;
+				y = empty_Spots[last_Empty].y;
+				last_Empty--;
+				
+	        	grid[x][y] = breakPointIndex+1; 
+	        	colored++;
+	        	numBlock[breakPointIndex]++;
+
+			}while(colored < numToColor);
+			
+
+			/*
+			 * An extremely wasteful way to find a spot to fill a block
+			 * - Keeping code here for back up incase i find a bad bug in the new
+			 *   way of finding empty spaces
+			 */
+			/*
 			do{
 				i = utility.getRandInt(20, 0);
 				j = utility.getRandInt(20, 0);
 				
 	        	if(grid[i][j] == 0)
 	        	{
-	        		/*
+	        		  *
 	        		 * Since breakpoint index will always be 1 less than the number that's used to 
 	        		 * determine what color to paint a square, we just use it to tell surface2 what
 	        		 * to paint instead of sending a color as a parameter
-	        		 */
-		        	grid[i][j] = breakPointIndex+1; //Since break point index will
+	        		 *
+		        	grid[i][j] = breakPointIndex+1; 
 		        	colored++;
 		        	numBlock[breakPointIndex]++;
 	        	}
 	        	
-	        	/*
-	        	System.out.println("bug");
-	        	System.out.println(colored);
-	        	System.out.println(breakPointIndex);
-	        	System.out.println(numToColor);
-	        	System.out.println(numBlock[0] + numBlock[1] + numBlock[2]);
-	        	System.out.println(getNumBlocks());
-	        	System.out.println(isGridFull() + "\n");
-	        	*/
 	        	
 			}while(grid[i][j] == 0 || (colored < numToColor));
 			
-			
+			*/
 	        test.repaint(); //Redraw grid 
 			breakpoint[breakPointIndex] = currentColorBreak; //Lets us know when we generate the next 100
 			updateBlockLabels(); //Update block label to show the blocks we just generated
@@ -419,20 +527,7 @@ public class main extends JPanel implements ActionListener{
 	 * ...etc
 	 */
 	public void upgradeBlocks(int block)
-	{
-		
-		/*
-		 * Maybe make a new upgrade blocks method that only upgrades 100 at a time and just have to call it multiple times 
-		 * or just make a new grid every time a reset happens with the correnct num_blocks
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 */
-		
-		
-		
+	{		
 		Point[] findColors = new Point[MAX_GRID_NUM];
 		Point tempPoint;
 		int raw_numBlocks_to_upgrade, numBlocks_to_upgrade;
@@ -532,18 +627,9 @@ public class main extends JPanel implements ActionListener{
 			prices[choice] = Math.pow(prices[choice], 1.1);
 			fruit_count[choice] += 1;
 			
-			/*
-			 * Makes a call the change the block multiplier
-			 * 
-			 *  - Later the 1000 will have to be changed to some integer division function
-			 * 
-			 */
-			if(money_rate > 1000 && multiplier_changed==false)
-			{
-				changeBlockGenMultiplier();
-			}
 			
-			
+			//Doesn't always change a multiplier
+			changeBlockGenMultiplier();
 			
 			updateMoneyLabels();
 			updatePrice(choice);
@@ -567,12 +653,21 @@ public class main extends JPanel implements ActionListener{
 	 */
 	public void changeBlockGenMultiplier()
 	{
+		int i;
 		
-		color_per_dollar_multiplier += 2;
+		i = current_yellow_mult_index;
+		if(money_rate > yellow_multipliers[i].x)
+		{
+			current_yellow_mult_index++;
+			breakpoint[0] = 0; //Lemons
+			//Need to move these out after if each fruit gets it's own set of breakpoints mults
+			breakpoint[1] = 0; //Oranges
+			breakpoint[2] = 0; //Apples
+		}
 		
-		breakpoint[0] = 0; //Lemons
-		breakpoint[1] = 0; //Oranges
-		breakpoint[2] = 0; //Apples
+		//color_per_dollar_multiplier += 2;
+		
+
 		multiplier_changed = true;
 
 	}
