@@ -8,10 +8,13 @@
  * Blocks are used to purchase special upgrades
  * hopefully they can be brought up in a menu (the choices)
  * 
+ * As the user starts to generate more and more money, blocks become
+ * harder and harder to generate, so be careful with your spending!
+ * 
  * 
  * 
  * TODO next:
- * 	- Where i'm at with adding apple: just need to be able to upgrade orange into red
+ * 	- Fixing bug that is some where in upgradeBlocks
  * 
  *  - Decide how i want to handle when i no longer need yellow blocks
  *  		- Maybe use the same alg i did to color everything yellow
@@ -100,6 +103,9 @@ public class main extends JPanel implements ActionListener{
 	private double end_time;
 	private double difference;
 	private DecimalFormat df2 = new DecimalFormat("###.##");
+	private int yellow_per_dollar, orange_per_dollar, red_per_dollar;
+	private int color_per_dollar_multiplier;
+	private boolean multiplier_changed = false;
 
 	
 	final int WIDTH = 800;
@@ -121,14 +127,21 @@ public class main extends JPanel implements ActionListener{
 		//Initial breakpoint for all colors of blocks is 0
 		breakpoint[0] = 0; //Lemons
 		breakpoint[1] = 0; //Oranges
-		breakpoint[2] = 0;
+		breakpoint[2] = 0; //Apples
 		
+		//For every $ amount, they gain 1 block
+		yellow_per_dollar = 100;
+		orange_per_dollar = 1000;
+		red_per_dollar = 1000000;
+		color_per_dollar_multiplier = 1;
+		
+
 		//Sets up prices
 		prices[0] = 2; //Lemon price
 		prices[1] = 10; //Orange price
 		prices[2] = 100; //Apple price
 		
-		rates[0] = 20;
+		rates[0] = 1000;
 		rates[1] = 100;
 		rates[2] = 150;
 		
@@ -182,9 +195,13 @@ public class main extends JPanel implements ActionListener{
 		
 		//Can probably just have a one method for this later instead of having one of these blocks
 		// per color
-		yellowBreakpoint = (int)(total_money_made/100);
-		orangeBreakpoint = (int)(total_money_made/1000);
-		redBreakpoint = (int)(total_money_made/10000);
+		yellowBreakpoint = (int)(total_money_made/(yellow_per_dollar*color_per_dollar_multiplier));
+		orangeBreakpoint = (int)(total_money_made/(orange_per_dollar*color_per_dollar_multiplier));
+		redBreakpoint = (int)(total_money_made/(red_per_dollar*color_per_dollar_multiplier));
+		
+		/*
+		 * Yellow Breakpoint handling
+		 */
 		if(yellowBreakpoint > breakpoint[0] && (breakpoint[0]%100 != 9))
 		{
 			handleBreakPoint(yellowBreakpoint, 0, numBlock[0]);
@@ -195,7 +212,11 @@ public class main extends JPanel implements ActionListener{
 			breakpoint[0]++;
 		}
 		
-		if(orangeBreakpoint > breakpoint[1] && (breakpoint[1]%10 != 9))
+
+		/*
+		 * Orange Breakpoint handling
+		 */
+		if(orangeBreakpoint > breakpoint[1] && (breakpoint[1]%100 != 9))
 		{
 			handleBreakPoint(orangeBreakpoint, 1, numBlock[1]);
 		}
@@ -204,9 +225,12 @@ public class main extends JPanel implements ActionListener{
 			breakpoint[1]++;
 		}
 		
-		if(redBreakpoint > breakpoint[2] && (breakpoint[2]%10 != 9))
+
+		/*
+		 * Red Breakpoint handling
+		 */
+		if(redBreakpoint > breakpoint[2] && (breakpoint[2]%100 != 9))
 		{
-			System.out.println("asdfasdf");
 			handleBreakPoint(redBreakpoint, 2, numBlock[2]);
 		}
 		else if(breakpoint[2]%100 == 9 && (redBreakpoint>breakpoint[2]))
@@ -242,10 +266,11 @@ public class main extends JPanel implements ActionListener{
 		int colored = 0;
 
 		
-		numToColor = currentColorBreak - breakpoint[breakPointIndex];
+		numToColor = currentColorBreak - breakpoint[breakPointIndex];	
+		
+		
 		if((numToColor + getNumBlocks()) >= MAX_GRID_NUM) //CHANGE WHEN ADDING MORE FRUIT ///DO GETSIZE
 		{
-			//numToColor = MAX_GRID_NUM - numColor;
 			handleFullGrid();
 		}
 		
@@ -268,7 +293,19 @@ public class main extends JPanel implements ActionListener{
 		        	colored++;
 		        	numBlock[breakPointIndex]++;
 	        	}
+	        	
+	        	/*
+	        	System.out.println("bug");
+	        	System.out.println(colored);
+	        	System.out.println(breakPointIndex);
+	        	System.out.println(numToColor);
+	        	System.out.println(numBlock[0] + numBlock[1] + numBlock[2]);
+	        	System.out.println(getNumBlocks());
+	        	System.out.println(isGridFull() + "\n");
+	        	*/
+	        	
 			}while(grid[i][j] == 0 || (colored < numToColor));
+			
 			
 	        test.repaint(); //Redraw grid 
 			breakpoint[breakPointIndex] = currentColorBreak; //Lets us know when we generate the next 100
@@ -294,7 +331,7 @@ public class main extends JPanel implements ActionListener{
 		int size;
 		
 		//Need to add up all the colors here 
-		size = numBlock[0] + numBlock[1];
+		size = numBlock[0] + numBlock[1] + numBlock[2];
 		
 		return (size >= MAX_GRID_NUM);
 	}
@@ -381,16 +418,39 @@ public class main extends JPanel implements ActionListener{
 	 */
 	public void upgradeBlocks(int block)
 	{
+		
+		/*
+		 * Maybe make a new upgrade blocks method that only upgrades 100 at a time and just have to call it multiple times 
+		 * or just make a new grid every time a reset happens with the correnct num_blocks
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 */
+		
+		
+		
 		Point[] findColors = new Point[MAX_GRID_NUM];
 		Point tempPoint;
 		int raw_numBlocks_to_upgrade, numBlocks_to_upgrade;
 		int nextEmpty = 0;
 		int randomNum;
+		int m = 0;
 		
-		raw_numBlocks_to_upgrade= numBlock[block];
-		numBlocks_to_upgrade = raw_numBlocks_to_upgrade/100; //This will have to change if we want different conversion rates instead of 100 per
+		raw_numBlocks_to_upgrade = numBlock[block];
+		numBlocks_to_upgrade = raw_numBlocks_to_upgrade/100; //This will have to change if we want different conversion rates instead of 100 per and lower in the function
+		
+		
+		System.out.println(raw_numBlocks_to_upgrade);
+		System.out.println(numBlock[block]);
+		System.out.println(numBlocks_to_upgrade + "\n");
+		
+		
 		numBlock[block] = numBlock[block] - (numBlocks_to_upgrade*100); //100 blocks = 1 block of the next kind
 		numBlock[block+1] = numBlock[block+1] + numBlocks_to_upgrade; 
+		
+		
 		
 		updateBlockLabels();
 		//NOw...how to update grid
@@ -410,6 +470,9 @@ public class main extends JPanel implements ActionListener{
 				}
 			}
 			
+			
+
+			
 			//Pseudo shuffle of the locations of the array so that when we removed we don't always remove
 			//the first 100
 			int index;
@@ -421,24 +484,32 @@ public class main extends JPanel implements ActionListener{
 		      findColors[index] = findColors[i];
 		      findColors[i] = a;
 		    }
+		    
 			
 		    /*
-		     * Takes the first 100 entries of the shuffle array (locations of colors) and decreases
+		     * Takes the first 100*numBlocks upgraded entries of the shuffle array (locations of colors) and decreases
 		     * their value by 1 and takes the last couple (number of colors above current colors) 
 		     * and increases their value by 1
 		     */
+			
+			
 		    for(int i=0;i<(numBlocks_to_upgrade*100);i++)
 			{
+
+	
+		    	
 				tempPoint = findColors[i];
 				if(i < ((numBlocks_to_upgrade*100)-numBlocks_to_upgrade))
 				{
-					grid[findColors[i].x][findColors[i].y] -= 1;
+					grid[findColors[i].x][findColors[i].y] += -1;
 				}
 				else
 				{
 					grid[findColors[i].x][findColors[i].y] += 1;
 				}
+				
 			}
+
 		    
 			test.repaint(); //Color the grid that we just changed
 		}//End of if statement	
@@ -456,11 +527,49 @@ public class main extends JPanel implements ActionListener{
 			prices[choice] = Math.pow(prices[choice], 1.1);
 			fruit_count[choice] += 1;
 			
+			/*
+			 * Makes a call the change the block multiplier
+			 * 
+			 *  - Later the 1000 will have to be changed to some integer division function
+			 * 
+			 */
+			if(money_rate > 1000 && multiplier_changed==false)
+			{
+				//changeBlockGenMultiplier();
+			}
+			
+			
+			
 			updateMoneyLabels();
 			updatePrice(choice);
 			
 		}
 		
+	}
+	
+	/*
+	 * Input: none
+	 * 
+	 * Method makes the program generate less blocks so they are more rare as they 
+	 * earn more money per second
+	 * 
+	 * Future: 
+	 *  - Can add an argument that tells the method how to change it
+	 *  - Might only want to have specific fruit multiplier changes, but be so hard
+	 *    to generate the later blocks
+	 *  - Add a pop up message to the user that tells them because it's about to get 
+	 *    harder to generate blocks they get some extra ones for free!
+	 */
+	public void changeBlockGenMultiplier()
+	{
+		
+		color_per_dollar_multiplier += 2;
+		
+		breakpoint[0] = 0; //Lemons
+		breakpoint[1] = 0; //Oranges
+		breakpoint[2] = 0; //Apples
+		multiplier_changed = true;
+
 	}
 	
 	/*
@@ -627,6 +736,10 @@ public class main extends JPanel implements ActionListener{
 	public void drawLabels()
 	{
 		String temp; 
+		
+		/* 
+		 * Money Labels
+		 */
 
         //Creates a label for total money made
         temp = Double.toString(total_money_made);
@@ -711,10 +824,10 @@ public class main extends JPanel implements ActionListener{
 		gameState.draw();	
 		gameState.drawLabels();
 		
-		for(int i=0;i<1000;i++)
+		for(int i=0;i<100000;i++)
 		{
 
-			util.waitMili(123);	
+			util.waitMili(300);	
 			gameState.showStats();
 				
 		}
