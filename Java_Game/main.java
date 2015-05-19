@@ -109,6 +109,8 @@ public class main extends JPanel implements ActionListener{
 	private double end_time;
 	private double difference;
 	private DecimalFormat df2 = new DecimalFormat("###.##");
+	private DecimalFormat df3 = new DecimalFormat("#,###.##");
+
 	private int yellow_per_dollar, orange_per_dollar, red_per_dollar;
 	private int color_per_dollar_multiplier;
 	private boolean multiplier_changed = false;
@@ -716,6 +718,7 @@ public class main extends JPanel implements ActionListener{
 		String temp;
 		
 		current_money = Double.valueOf(df2.format(current_money));
+		current_money = Double.valueOf(df3.format(current_money));
 		temp = Double.toString(current_money);
 	    currMon_label.setText("Current money: $" + temp);
 	   

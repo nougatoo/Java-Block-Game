@@ -38,6 +38,20 @@ public class Utilities {
 		
 		return ff;
 	}
+	
+	public void create_label_test(JLabel test, int x, int y, String text, int sizeX, int sizeY, Color color )
+	{
+		
+		test.setText(text);
+        test.setForeground(color);
+        test.setSize(sizeX, sizeY);
+        test.setLocation(x, y);
+        
+		JLabel asdf= null;
+		
+		
+		//return test;
+	}
 
 	//Returns a random integer between two numbers
 	public int getRandInt(int max, int min)
