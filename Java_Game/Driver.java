@@ -9,23 +9,27 @@ package Main;
  * 		  show that they are worth more 
  * 		  This will still have the incremental components like this game
  * 	
- 
-public class driver {
+ */
+public class Driver {
 
 
 	 public static void main(String[] args) {
 		 
-		 Game game = new Game();
-		 game.initialize();
-		 while (1<2)
-		 {
-		     game.showStats();
-		     game.showOptions();
-		     int choice = game.selectOption();
-			 game.handleChoice(choice);
-		 }
-	 	}
-	 
+			Game gameState = new Game(); //New game
+		Utilities util = new Utilities(); //For non-game functions
+		gameState.initialize();
+
+		gameState.draw();	
+		gameState.drawLabels();
+		
+		for(int i=0;i<100000;i++)
+		{
+
+			util.waitMili(123);	
+			gameState.showStats();
+				
+		}
+	 }
 }
 
-*/
+

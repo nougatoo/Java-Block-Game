@@ -16,6 +16,11 @@ class Surface2 extends JPanel implements ActionListener {
 	private final int BLOCK_SIZE_X = 15;
 	private final int BLOCK_SIZE_Y = 15;
 	private final int BLOCK_SPACING = 2;
+	
+	private Color SOFT_YELLOW = new Color(253,253,75);
+	private Color SOFT_ORANGE = new Color(255,126,53);
+	private Color SOFT_RED = new Color(255,50,50);
+	private Color DARK_ORANGE = new Color(255,140,0);
 	/*
 	 * 0 = White (for now)
 	 * 1 = Yellow
@@ -38,11 +43,11 @@ class Surface2 extends JPanel implements ActionListener {
     {
     	//x should stay the same, y is 8 higher than label y
     	//Add more colors later
-    	g.setColor(Color.YELLOW);
+    	g.setColor(SOFT_YELLOW);
     	g.fillRect(480, 109, 10, 10); 
-    	g.setColor(Color.ORANGE);
+    	g.setColor(SOFT_ORANGE);
     	g.fillRect(480, 149, 10, 10);
-    	g.setColor(Color.RED);
+    	g.setColor(SOFT_RED);
     	g.fillRect(480, 189, 10, 10);
     }
 
@@ -54,7 +59,7 @@ class Surface2 extends JPanel implements ActionListener {
     	g.fillRect(0, 0, 10, 10);
     	int maxNum = 10;
     	
-    	for(int x = 0;x<20;x++)
+    	for(int x = 0;x<20;x++)//Change the 20 if grid size is larger or smaller than 400
     	{
     		for(int y = 0;y<20;y++)
     		{
@@ -64,15 +69,15 @@ class Surface2 extends JPanel implements ActionListener {
     			}
     			else if(squareGrid[x][y] == 1)
     			{
-    				g.setColor(Color.YELLOW);
+    				g.setColor(SOFT_YELLOW);
     			}
     			else if(squareGrid[x][y] == 2)
     			{
-    				g.setColor(Color.ORANGE);
+    				g.setColor(SOFT_ORANGE);
     			}
     			else if(squareGrid[x][y] == 3)
     			{
-    				g.setColor(Color.RED);
+    				g.setColor(SOFT_RED);
     			}
     			else if(squareGrid[x][y] == -1)
     			{

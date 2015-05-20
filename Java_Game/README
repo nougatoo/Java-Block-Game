@@ -1,6 +1,0 @@
-In order to add a new fruit:
-
- - Add a button and labels for said fruit
- - Add another variable to prices
- - Add another variable to fruit_count
- - Add another variable to rates
