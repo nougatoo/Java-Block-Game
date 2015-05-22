@@ -21,6 +21,9 @@ class Surface2 extends JPanel implements ActionListener {
 	private Color SOFT_ORANGE = new Color(255,126,53);
 	private Color SOFT_RED = new Color(255,50,50);
 	private Color DARK_ORANGE = new Color(255,140,0);
+	private Color SOFT_PURPLE = new Color(204,102,204);
+	private Color SOFT_BLUE = new Color(100,100,255);
+	
 	/*
 	 * 0 = White (for now)
 	 * 1 = Yellow
@@ -44,11 +47,20 @@ class Surface2 extends JPanel implements ActionListener {
     	//x should stay the same, y is 8 higher than label y
     	//Add more colors later
     	g.setColor(SOFT_YELLOW);
+    	
     	g.fillRect(480, 109, 10, 10); 
     	g.setColor(SOFT_ORANGE);
+    	
     	g.fillRect(480, 149, 10, 10);
     	g.setColor(SOFT_RED);
+    	
     	g.fillRect(480, 189, 10, 10);
+    	
+    	g.setColor(SOFT_PURPLE);
+    	g.fillRect(480, 229, 10, 10);
+
+    	g.setColor(SOFT_BLUE);
+    	g.fillRect(480, 269, 10, 10);
     }
 
 	private void doDrawing(Graphics g) {
@@ -79,9 +91,17 @@ class Surface2 extends JPanel implements ActionListener {
     			{
     				g.setColor(SOFT_RED);
     			}
+    			else if(squareGrid[x][y] == 4)
+    			{
+    				g.setColor(SOFT_PURPLE);
+    			}
+    			else if(squareGrid[x][y] == 5)
+    			{
+    				g.setColor(SOFT_BLUE);
+    			}
     			else if(squareGrid[x][y] == -1)
     			{
-    				g.setColor(Color.BLUE);
+    				g.setColor(Color.GREEN);
     			}
     	        
     			 //The (15+2) can be changed to anything above 15 (will just increase spacing 

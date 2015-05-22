@@ -1,32 +1,36 @@
-/*
-package Main;
 
-/*
- * Ideas: 
- * 		- some game with "pixels" that you generate
- * 		  and different colors mean more money and when
- * 		  the screen gets full the colors start to change to
- * 		  show that they are worth more 
- * 		  This will still have the incremental components like this game
- * 	
- */
 public class Driver {
 
 
 	 public static void main(String[] args) {
 		 
-			Game gameState = new Game(); //New game
-		Utilities util = new Utilities(); //For non-game functions
-		gameState.initialize();
-
-		gameState.draw();	
-		gameState.drawLabels();
+		int choice;
+		WelcomeLogic welcome_screen;
+		Game game;
+		Utilities util;
+		
+		util = new Utilities(); //For non-game functions
+		
+		/*
+		 * Creates a welcome screen and waits until the user has made a choice
+		 */
+		welcome_screen = new WelcomeLogic();
+		welcome_screen.createWelcomeScreen();
+		choice = welcome_screen.waitForChoice();
+		welcome_screen.tearDown();
+		
+		
+		
+		game = new Game(choice); //New game
+		game.initialize(); //Initialize all game variables and data
+		game.create_frame(); //
+		game.create_main_panel();
 		
 		for(int i=0;i<100000;i++)
 		{
 
 			util.waitMili(123);	
-			gameState.showStats();
+			game.showStats();
 				
 		}
 	 }
