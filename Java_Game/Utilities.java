@@ -32,8 +32,6 @@ public class Utilities {
         ff.setForeground(color);
         ff.setSize(sizeX, sizeY);
         ff.setLocation(x, y);
-        
-		JLabel asdf= null;
 		
 		
 		return ff;
@@ -46,8 +44,6 @@ public class Utilities {
         test.setForeground(color);
         test.setSize(sizeX, sizeY);
         test.setLocation(x, y);
-        
-		JLabel asdf= null;
 		
 		
 		//return test;

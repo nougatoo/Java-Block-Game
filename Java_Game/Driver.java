@@ -3,21 +3,21 @@ public class Driver {
 
 
 	 public static void main(String[] args) {
-		 
-		int choice;
+
+		int choice = -1;
 		WelcomeLogic welcome_screen;
 		Game game;
 		Utilities util;
 		
 		util = new Utilities(); //For non-game functions
 		
-		/*
-		 * Creates a welcome screen and waits until the user has made a choice
-		 */
-		welcome_screen = new WelcomeLogic();
-		welcome_screen.createWelcomeScreen();
-		choice = welcome_screen.waitForChoice();
-		welcome_screen.tearDown();
+		
+		 /* Creates a welcome screen and waits until the user has made a choice */
+		 
+		//welcome_screen = new WelcomeLogic();
+		//welcome_screen.createWelcomeScreen();
+		//choice = welcome_screen.waitForChoice();
+		//welcome_screen.tearDown();
 		
 		
 		
@@ -29,7 +29,7 @@ public class Driver {
 		for(int i=0;i<100000;i++)
 		{
 
-			util.waitMili(123);	
+			util.waitMili(122);	
 			game.showStats();
 				
 		}

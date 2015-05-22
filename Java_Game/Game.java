@@ -14,10 +14,8 @@
  * 
  * 
  * TODO next:
- * 	- How to make a menu that shows you upgrades you can buy with blocks
- *  	- I want the game to pause while they are in this menu so that they can see
- *  	  how many blocks they have. 
- *  		- to do this: when the menu opens, save time...etc
+ * 		- Add a pause button
+ * 			general message: You will not earn money if t he game is paused!
  * 
  * 
  *  Long term TODO: 
@@ -40,21 +38,27 @@ import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.event.AncestorListener;
 
 
 
 
 
 
-public class Game extends JPanel implements ActionListener{
+public class Game extends JPanel{
 	
-	private Utilities utility;
+	private Utilities util;
 
 	//Graphic attributes
 	private JFrame frame;
@@ -67,6 +71,7 @@ public class Game extends JPanel implements ActionListener{
 	private JLabel currMon_label, currRate_label, totalMon_label, lemonP_label, orangeP_label, appleP_label, grapeP_label, blueberryP_label;
 	private JLabel numLemon_label, numOranges_label, numApple_label, numGrape_label, numBlueberry_label; //Number of fruit purchased
 	private JLabel numYellow_label, numOrange_label, numRed_label, numPurple_label, numBlue_label; //Number of blocks generated label
+	private JLabel general_message_label1, general_message_label2, general_message_label3, general_message_label4, general_message_label5;
 	
 	private int[] numBlock = new int[3]; //Integer rep of all blocks
 	private final int MAX_GRID_NUM = 400;
@@ -115,10 +120,36 @@ public class Game extends JPanel implements ActionListener{
 	final int HEIGHT = 600;
 	final int FIRST_BUTTON = 450;
 	
+	/* 
+	 * Upgrade menu stuff
+	 */
+	private JButton upgrade_menu_button;
+	private JFrame upgrade_menu_frame;
+	private JPanel upgrade_menu_panel;
+	
+	private UpgradeMenu menu;
+	private MainListener main_listener = new MainListener(this);
+	
+	private volatile int menu_choice = -1;
+    boolean upgrade_menu_open = false;
+    
+    private double upgrade_multiplier;
+    private boolean upgrade_multiplier_on;
+	private double upgrade_start_time;
+	private double upgrade_end_time;
+	private double current_time;
+	private int[] upgrade_durations = new int[3]; //CHANGE WHEN ADD MORE UPGRADES\
+	private int upgrade_durations_index;
+	
+	
+	
+	
 	public Game(int choice)
 	{
 		game_type = choice;
 	}
+	
+	
 	
 	/**
 	 * Initialize game state (non graphics)
@@ -126,6 +157,7 @@ public class Game extends JPanel implements ActionListener{
 	 */
 	public Boolean initialize()
 	 {
+
 		/* 
 		 * Creating new fruits
 		 */
@@ -148,49 +180,49 @@ public class Game extends JPanel implements ActionListener{
 		 * Creating the Blocks that we want to use
 		 */
 		
-		yellow = new Block(1, 1000, 
-				1, 10000, 
-				100, 100000, 
-				1000, 1000000, 
-				10000, 10000000, 
-				100);
+		yellow = new Block(2, 1000, 
+						1, 10000, 
+						100, 100000, 
+						1000, 1000000, 
+						10000, 10000000, 
+						100);
 		blocks[0] = yellow;
 
 		orange = new Block(1, 1000,
-				10, 10000,
-				100, 100000,
-				1000, 1000000,
-				10000, 10000000,
-				1000);
+						10, 10000,
+						100, 100000,
+						1000, 1000000,
+						10000, 10000000,
+						1000);
 		blocks[1] = orange;
 
 		red = new Block(1, 1000,
-				10, 10000,
-				100, 100000,
-				1000, 1000000,
-				10000, 10000000,
-				10000);
+						10, 10000,
+						100, 100000,
+						1000, 1000000,
+						10000, 10000000,
+						1000);
 		blocks[2] = red;
 
 		purple = new Block(1, 1000,
-				10, 10000,
-				100, 100000,
-				1000, 1000000,
-				10000, 10000000,
-				100000);
+						10, 10000,
+						100, 100000,
+						1000, 1000000,
+						10000, 10000000,
+						100000);
 		blocks[3] = purple;
 
 		blue = new Block(1, 1000,
-				10, 10000,
-				100, 100000,
-				1000, 1000000,
-				10000, 10000000,
-				1000000);
+						10, 10000,
+						100, 100000,
+						1000, 1000000,
+						10000, 10000000,
+						1000000);
 		blocks[4] = blue;
 
 
 
-		utility = new Utilities();
+		util = new Utilities();
 		current_money = 10;
 		money_rate = 1;
 		total_money_made = current_money;
@@ -218,8 +250,13 @@ public class Game extends JPanel implements ActionListener{
 		//how much the user has made
 		start_time = System.currentTimeMillis();
 		
-
-		 
+		//For the upgrade system
+		upgrade_multiplier = 1;
+		upgrade_multiplier_on = false;
+		upgrade_durations[0] = 3000;
+		upgrade_durations[1] = 5000;
+		upgrade_durations[2] = 7000;
+		upgrade_durations_index = 0;
 		return true;
 	 }
 	
@@ -243,13 +280,28 @@ public class Game extends JPanel implements ActionListener{
 		
 		//THIS NEEDS TO CHNAGE WHEN EACH FRUIT GETS THEIR OWN BREAKPOINT
 		index = blocks[0].getCurrent_mult_index();
+
+		
+		/*
+		 * Checks the current time against the time we started the upgrade multiplier
+		 * but only if there is a multiplier active
+		 */
+		current_time = System.currentTimeMillis();
+		if(current_time - upgrade_start_time > upgrade_durations[upgrade_durations_index] && upgrade_multiplier_on == true)
+		{
+			System.out.println("should not see");
+			endUpgradeMultiplier();
+		}
+		
+		
 		
 		/*
 		 * Gets and stores all the different breakpoints for the colors we're using
 		 */
 		for(int i = 0; i<NUMBER_OF_COLORS;i++)
 		{
-			color_break[i] = (int)(total_money_made/(blocks[i].getNum_per_dollar()*blocks[i].getMultiplier(index).y));
+			color_break[i] = (int)(total_money_made/(blocks[i].getNum_per_dollar()*blocks[i].getMultiplier(index).y)
+					);
 		}
 		
 		/*
@@ -322,7 +374,7 @@ public class Game extends JPanel implements ActionListener{
 		
 	    for (int i = (last_Empty); i > 0; i--)
 	    {
-	    	index = utility.getRandInt(last_Empty-1, 0);
+	    	index = util.getRandInt(last_Empty-1, 0);
 	    	// Simple swap
 	    	Point a = empty_Spots[index];
 	    	empty_Spots[index] = empty_Spots[i];
@@ -420,7 +472,6 @@ public class Game extends JPanel implements ActionListener{
 	
 	public void create_frame()
 	{
-		System.out.println("Helo");
 		//Sets up the frame
 		frame = new JFrame("Test Box");
 		frame.pack();
@@ -433,7 +484,7 @@ public class Game extends JPanel implements ActionListener{
 	
 	public void create_main_panel()
 	{
-		utility.waitMili(100);
+		util.waitMili(100);
 		//Sets up the game panel
 		test = new Surface2(grid);
 		test.setLayout(null);
@@ -444,10 +495,16 @@ public class Game extends JPanel implements ActionListener{
 		drawButtons();
 		drawLabels();
 				
-		utility.waitMili(300);
+		util.waitMili(300);
         //Shows everything we need		
 		frame.setVisible(true);
 		
+	}
+	
+	public void createUpgradeMenu()
+	{
+		menu = new UpgradeMenu();
+		menu.createMenu();
 	}
 	
 	/*
@@ -470,63 +527,8 @@ public class Game extends JPanel implements ActionListener{
 		*/
 		return 0;
 	}
+
 	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		
-		int button = -1;
-		int block = -1;
-		//Could have a method for each button that handles each case and this method will just send the program to that place
-		if("lemon".equals(e.getActionCommand()))
-		{
-			button = 1;
-			handlePress(button);
-		}
-		else if("orange".equals(e.getActionCommand()))
-		{
-			button = 2;
-			handlePress(button);
-		}
-		else if("apple".equals(e.getActionCommand()))
-		{
-			button = 3;
-			handlePress(button);
-		}
-		else if("grape".equals(e.getActionCommand()))
-		{
-			button = 4;
-			handlePress(button);
-		}
-		else if("blueberry".equals(e.getActionCommand()))
-		{
-			button = 5;
-			handlePress(button);
-		}
-		else if("upgradeYellow".equals(e.getActionCommand()))
-		{
-			block = 0;
-			upgradeBlocks(block);
-			
-		}
-		else if("upgradeOrange".equals(e.getActionCommand()))
-		{
-			block = 1;
-			upgradeBlocks(block);
-			
-		}
-		else if("upgradeRed".equals(e.getActionCommand()))
-		{
-			block = 2;
-			upgradeBlocks(block);
-			
-		}
-		else if("upgradePurple".equals(e.getActionCommand()))
-		{
-			block = 3;
-			upgradeBlocks(block);
-			
-		}
-	}
 	/*
 	 * Converts as many possible blocks from one to the next
 	 * 0 = yellow
@@ -572,7 +574,7 @@ public class Game extends JPanel implements ActionListener{
 			int index;
 		    for (int i = (nextEmpty -1 ) - 1; i > 0; i--)
 		    {
-		      index = utility.getRandInt(nextEmpty-1, 0);
+		      index = util.getRandInt(nextEmpty-1, 0);
 		      // Simple swap
 		      Point a = findColors[index];
 		      findColors[index] = findColors[i];
@@ -618,14 +620,16 @@ public class Game extends JPanel implements ActionListener{
 		
 		if((current_money >= fruits[choice].getPrice()))
 		{
-			money_rate += fruits[choice].getRate();
+			money_rate = ((money_rate/upgrade_multiplier) + fruits[choice].getRate())*upgrade_multiplier;
 			current_money -= fruits[choice].getPrice();
 			fruits[choice].setPrice(Math.pow(fruits[choice].getPrice(), 1.04));
 			
 			fruits[choice].setCount(fruits[choice].getCount() +1 );
 		
-			changeBlockGenMultiplier();
-			
+			if(upgrade_multiplier_on == false)
+			{
+				changeBlockGenMultiplier();
+			}
 			updateMoneyLabels();
 			updatePrice(choice);
 			
@@ -633,6 +637,135 @@ public class Game extends JPanel implements ActionListener{
 		
 	}
 	
+	
+	/*
+	 * Input: choice from the upgrade menu that the user chose
+	 * Return: n/a
+	 * Function: Changes the upgrade multiplier, and stores the time that it started at
+	 * 	 		 then multiplies current rate by the multiplier
+	 */
+	public void handleUpgradeMenuChoice(int choice) {
+		
+		int numChanged = 0;
+		int[] findColorsToRemove = new int[400];
+		int index = 0;
+		upgrade_menu_open = false;
+		//menu.tearDown(); //Takes down the upgrade menu
+		
+		/*
+		 * If we have enough blocks to upgrade and there isn't already a multiplier going on
+		 * we scan the grid and find the first 10 red blocks and change them to black and update
+		 * numBlocks as nessicary
+		 */
+		if(choice == 0 && upgrade_multiplier_on == false && blocks[choice].getNum_blocks() >= 250)
+		{
+			
+			//Change if max grid size increases
+			for(int i = 0; i<20;i++)
+			{
+				for(int j = 0;j<20;j++)
+				{
+					if(grid[i][j] == 1 && numChanged<250)
+					{
+						grid[i][j] = 0;
+						numChanged++;
+					}
+				}
+			}
+
+			blocks[choice].setNum_blocks(blocks[choice].getNum_blocks()-250); //we should have removed 10 blocks by now so so update numBlocks
+			updateEmptySpots(); //and update the empty spots
+			
+			upgrade_durations_index = 0;
+			upgrade_multiplier = 2;
+			upgrade_start_time = System.currentTimeMillis();
+			upgrade_multiplier_on = true;
+			money_rate = money_rate*upgrade_multiplier; 
+			
+			updateGeneralMessages("Upgrade Successfully Purchased! x2 for 3 seconds!");
+			updateMoneyLabels();
+		}		
+		else if(choice == 1 && upgrade_multiplier_on == false && blocks[choice].getNum_blocks() >= 125)
+		{
+			
+			//Change if max grid size increases
+			for(int i = 0; i<20;i++)
+			{
+				for(int j = 0;j<20;j++)
+				{
+					if(grid[i][j] == 2 && numChanged<125)
+					{
+						grid[i][j] = 0;
+						numChanged++;
+					}
+				}
+			}
+
+			blocks[choice].setNum_blocks(blocks[choice].getNum_blocks()-125); //we should have removed 10 blocks by now so so update numBlocks
+			updateEmptySpots(); //and update the empty spots
+			
+			upgrade_durations_index = 1;
+			upgrade_multiplier = 4;
+			upgrade_start_time = System.currentTimeMillis();
+			upgrade_multiplier_on = true;
+			money_rate = money_rate*upgrade_multiplier; 
+			
+			updateGeneralMessages("Upgrade Successfully Purchased! x4 for 5 seconds!");
+			updateMoneyLabels();
+		}
+		else if(choice == 2 && upgrade_multiplier_on == false && blocks[choice].getNum_blocks() >= 60) //THIS ONE SHOULD REQUIRE THE USER HAVE BEEN PAST A CERTAIN BREAKPOIT
+		{
+			
+			//Change if max grid size increases
+			for(int i = 0; i<20;i++)
+			{
+				for(int j = 0;j<20;j++)
+				{
+					if(grid[i][j] == 3 && numChanged<60)
+					{
+						grid[i][j] = 0;
+						numChanged++;
+					}
+				}
+			}
+
+			blocks[choice].setNum_blocks(blocks[choice].getNum_blocks()-60); //we should have removed 10 blocks by now so so update numBlocks
+			updateEmptySpots(); //and update the empty spots
+			
+			upgrade_durations_index = 2;
+			upgrade_multiplier = 8;
+			upgrade_start_time = System.currentTimeMillis();
+			upgrade_multiplier_on = true;
+			money_rate = money_rate*upgrade_multiplier; 
+			
+			updateGeneralMessages("Upgrade Successfully Purchased! x8 for 7 seconds!");
+			updateMoneyLabels();
+		}
+		
+		
+		else if(upgrade_multiplier_on == true)
+		{
+			updateGeneralMessages("Only 1 block upgarde multiplier can be active at a time");
+		}
+		else
+		{
+			updateGeneralMessages("You do not have enough blocks to buy this upgrade!");
+		}
+		
+		
+	}
+	
+	public void endUpgradeMultiplier()
+	{
+		upgrade_multiplier_on = false;
+		money_rate = money_rate/upgrade_multiplier; 
+		upgrade_multiplier = 1;
+		updateGeneralMessages("Upgrade Ended!");
+		updateMoneyLabels();
+	}
+
+
+
 	/*
 	 * Input: none
 	 * 
@@ -756,8 +889,21 @@ public class Game extends JPanel implements ActionListener{
 		//Change Blue block label
 		temp = Integer.toString(blocks[4].getNum_blocks());
 		numBlue_label.setText("Number of Blue Blocks: " + temp);
-				
+		
+		
+
 	}
+	
+	public void updateGeneralMessages(String str)
+	{
+		general_message_label5.setText(general_message_label4.getText());
+		general_message_label4.setText(general_message_label3.getText());
+		general_message_label3.setText(general_message_label2.getText());
+		general_message_label2.setText(general_message_label1.getText());
+		general_message_label1.setText(str);
+	}
+	
+	
 	
 	
 
@@ -774,7 +920,7 @@ public class Game extends JPanel implements ActionListener{
 	    lemon_button.setBounds(15,FIRST_BUTTON, 100, 25);
 	    lemon_button.setVisible(true);
 	    lemon_button.setText(lemon.getName());
-	    lemon_button.addActionListener(this);
+	    lemon_button.addActionListener(main_listener);
 	    lemon_button.setActionCommand("lemon");
 	    
 
@@ -787,7 +933,7 @@ public class Game extends JPanel implements ActionListener{
 	    orange_button.setBounds(15, FIRST_BUTTON+35,100,25);
 	    orange_button.setVisible(true);
 	    orange_button.setText(oranges.getName());  
-	    orange_button.addActionListener(this);
+	    orange_button.addActionListener(main_listener);
 	    orange_button.setActionCommand("orange");
 	    
 	    /*
@@ -799,7 +945,7 @@ public class Game extends JPanel implements ActionListener{
 	    apple_button.setBounds(15, FIRST_BUTTON+70,100,25);
 	    apple_button.setVisible(true);
 	    apple_button.setText(apple.getName());  
-	    apple_button.addActionListener(this);
+	    apple_button.addActionListener(main_listener);
 	    apple_button.setActionCommand("apple");
 	    
 	    /*
@@ -811,7 +957,7 @@ public class Game extends JPanel implements ActionListener{
 	    grape_button.setBounds(260, FIRST_BUTTON,100,25);
 	    grape_button.setVisible(true);
 	    grape_button.setText(grape.getName());  
-	    grape_button.addActionListener(this);
+	    grape_button.addActionListener(main_listener);
 	    grape_button.setActionCommand("grape");
 	    
 	    /*
@@ -823,7 +969,7 @@ public class Game extends JPanel implements ActionListener{
 	    blueberry_button.setBounds(260, FIRST_BUTTON+35,100,25);
 	    blueberry_button.setVisible(true);
 	    blueberry_button.setText(blueberry.getName());  
-	    blueberry_button.addActionListener(this);
+	    blueberry_button.addActionListener(main_listener);
 	    blueberry_button.setActionCommand("blueberry");
 	    
 	    
@@ -837,7 +983,7 @@ public class Game extends JPanel implements ActionListener{
 	    upgradeYBlocks_button.setFont(smallButtonFont);
 	    upgradeYBlocks_button.setVisible(true);
 	    upgradeYBlocks_button.setText("Upgrade!");
-	    upgradeYBlocks_button.addActionListener(this);
+	    upgradeYBlocks_button.addActionListener(main_listener);
 	    upgradeYBlocks_button.setActionCommand("upgradeYellow");
 	    
 	    /*
@@ -850,7 +996,7 @@ public class Game extends JPanel implements ActionListener{
 	    upgradeOBlocks_button.setFont(smallButtonFont);
 	    upgradeOBlocks_button.setVisible(true);
 	    upgradeOBlocks_button.setText("Upgrade!");
-	    upgradeOBlocks_button.addActionListener(this);
+	    upgradeOBlocks_button.addActionListener(main_listener);
 	    upgradeOBlocks_button.setActionCommand("upgradeOrange");
 	    
 	    /*
@@ -863,7 +1009,7 @@ public class Game extends JPanel implements ActionListener{
 	    upgradeRBlocks_button.setFont(smallButtonFont);
 	    upgradeRBlocks_button.setVisible(true);
 	    upgradeRBlocks_button.setText("Upgrade!");
-	    upgradeRBlocks_button.addActionListener(this);
+	    upgradeRBlocks_button.addActionListener(main_listener);
 	    upgradeRBlocks_button.setActionCommand("upgradeRed");
 	    
 	    /*
@@ -876,7 +1022,7 @@ public class Game extends JPanel implements ActionListener{
 	    upgradePBlocks_button.setFont(smallButtonFont);
 	    upgradePBlocks_button.setVisible(true);
 	    upgradePBlocks_button.setText("Upgrade!");
-	    upgradePBlocks_button.addActionListener(this);
+	    upgradePBlocks_button.addActionListener(main_listener);
 	    upgradePBlocks_button.setActionCommand("upgradePurple");
 	
 	    /*
@@ -889,8 +1035,19 @@ public class Game extends JPanel implements ActionListener{
 	    upgradeBBlocks_button.setFont(smallButtonFont);
 	    upgradeBBlocks_button.setVisible(true);
 	    upgradeBBlocks_button.setText("Upgrade!");
-	    upgradeBBlocks_button.addActionListener(this);
+	    upgradeBBlocks_button.addActionListener(main_listener);
 	    upgradeBBlocks_button.setActionCommand("upgradeBlue");
+	    
+	    
+        //Creates a label with a border\
+	    upgrade_menu_button = new JButton();
+	    test.add(upgrade_menu_button);
+	    upgrade_menu_button.setBounds(480, 35, 180, 25);
+	    upgrade_menu_button.setVisible(true);
+	    upgrade_menu_button.setText("Upgrade Menu");
+	    upgrade_menu_button.addActionListener(main_listener);
+	    upgrade_menu_button.setActionCommand("create_upgrade_menu");
+	    
 	
 	
 	}
@@ -902,54 +1059,82 @@ public class Game extends JPanel implements ActionListener{
 	 */
 	public void drawLabels()
 	{
+		
+		Color gray1 = new Color(200,200,200);
+		Color gray2 = new Color(112,112,112);
+		Color gray3 = new Color(72,72,72);
+		Color gray4 = new Color(32,32,32);
+		
 		String temp; 
+		
+		/*
+		 * General message labels that is just used to show the user messages as needed
+		 * and each one become more "transparent" than the last
+		 */
+        //Creates a label for the general message 1 (most recent)
+        general_message_label1 = util.create_label(470, 540, "", 360, 25, Color.WHITE);
+        test.add(general_message_label1);
+		
+        general_message_label2 = util.create_label(470, 515, "", 360, 25, gray1);
+        test.add(general_message_label2);
+
+        general_message_label3 = util.create_label(470, 490, "", 360, 25, gray2);
+        test.add(general_message_label3);
+        
+        general_message_label4 = util.create_label(470, 465, "", 360, 25, gray3);
+        test.add(general_message_label4);
+        
+        general_message_label5 = util.create_label(470, 440, "", 360, 25, gray4);
+        test.add(general_message_label5);
+
+        
+        
 		
 		/* 
 		 * Money Labels
 		 */
         //Creates a label for total money made
         temp = Double.toString(total_money_made);
-        totalMon_label = utility.create_label(125, 350, "Total Money Made: $" + temp, 250, 25, Color.WHITE);
+        totalMon_label = util.create_label(125, 350, "Total Money Made: $" + temp, 250, 25, Color.WHITE);
         test.add(totalMon_label);
 
         //Creates a label for the current money 
         temp = Double.toString(current_money);
-        currMon_label = utility.create_label(125, 400, "Current money: $" + temp, 250, 25, Color.WHITE);
+        currMon_label = util.create_label(125, 400, "Current money: $" + temp, 250, 25, Color.WHITE);
         test.add(currMon_label);              
     
         //Creates a label for the current money rate
         temp = Double.toString(money_rate);
-        currRate_label = utility.create_label(125, 375, "Current money rate: $" + temp, 250, 25, Color.WHITE);
+        currRate_label = util.create_label(125, 375, "Current money rate: $" + temp, 250, 25, Color.WHITE);
         test.add(currRate_label);
         
         
-        System.out.println("fffffffffff");
         /*
          * Fruit price Labels
          */
         //Lemons
         temp = Double.toString(lemon.getPrice());
-        lemonP_label = utility.create_label(160, FIRST_BUTTON, "$" + temp, 75, 25, Color.WHITE);
+        lemonP_label = util.create_label(160, FIRST_BUTTON, "$" + temp, 75, 25, Color.WHITE);
         test.add(lemonP_label);
         
         //Oranges
         temp = Double.toString(oranges.getPrice());
-        orangeP_label = utility.create_label(160, FIRST_BUTTON+35, "$" + temp, 75, 25, Color.WHITE);
+        orangeP_label = util.create_label(160, FIRST_BUTTON+35, "$" + temp, 75, 25, Color.WHITE);
         test.add(orangeP_label);
 
         //Apples
         temp = Double.toString(apple.getPrice());
-        appleP_label = utility.create_label(160, FIRST_BUTTON+70, "$" + temp, 75, 25, Color.WHITE);
+        appleP_label = util.create_label(160, FIRST_BUTTON+70, "$" + temp, 75, 25, Color.WHITE);
         test.add(appleP_label);
         
         //Grapes	
         temp = Double.toString(grape.getPrice());
-        grapeP_label = utility.create_label(405, FIRST_BUTTON, "$" + temp, 75, 25, Color.WHITE);
+        grapeP_label = util.create_label(405, FIRST_BUTTON, "$" + temp, 75, 25, Color.WHITE);
         test.add(grapeP_label);
         
         //Blueberries
         temp = Double.toString(blueberry.getPrice());
-        blueberryP_label = utility.create_label(405, FIRST_BUTTON+35, "$" + temp, 75, 25, Color.WHITE);
+        blueberryP_label = util.create_label(405, FIRST_BUTTON+35, "$" + temp, 75, 25, Color.WHITE);
         test.add(blueberryP_label);
         
         
@@ -960,27 +1145,27 @@ public class Game extends JPanel implements ActionListener{
         
         //Lemons
         temp = Integer.toString(lemon.getCount());
-        numLemon_label = utility.create_label(120, FIRST_BUTTON-5, "[ " + temp + " ]", 30, 30, Color.WHITE);
+        numLemon_label = util.create_label(120, FIRST_BUTTON-5, "[ " + temp + " ]", 30, 30, Color.WHITE);
         test.add(numLemon_label);
                         
         //Oranges
         temp = Integer.toString(oranges.getCount());
-        numOranges_label = utility.create_label(120, FIRST_BUTTON+30, "[ " + temp + " ]", 30, 30, Color.WHITE);
+        numOranges_label = util.create_label(120, FIRST_BUTTON+30, "[ " + temp + " ]", 30, 30, Color.WHITE);
         test.add(numOranges_label);      
         
         //Apples
         temp = Integer.toString(apple.getCount());
-        numApple_label = utility.create_label(120, FIRST_BUTTON+65, "[ " + temp + " ]", 30, 30, Color.WHITE);
+        numApple_label = util.create_label(120, FIRST_BUTTON+65, "[ " + temp + " ]", 30, 30, Color.WHITE);
         test.add(numApple_label);
         
         //Grapes
         temp = Integer.toString(grape.getCount());
-        numGrape_label = utility.create_label(365, FIRST_BUTTON-5, "[ " + temp + " ]", 30, 30, Color.WHITE);
+        numGrape_label = util.create_label(365, FIRST_BUTTON-5, "[ " + temp + " ]", 30, 30, Color.WHITE);
         test.add(numGrape_label);
 
         //Blueberries
         temp = Integer.toString(blueberry.getCount());
-        numBlueberry_label = utility.create_label(365, FIRST_BUTTON+30, "[ " + temp + " ]", 30, 30, Color.WHITE);
+        numBlueberry_label = util.create_label(365, FIRST_BUTTON+30, "[ " + temp + " ]", 30, 30, Color.WHITE);
         test.add(numBlueberry_label);
         
         /*
@@ -989,28 +1174,30 @@ public class Game extends JPanel implements ActionListener{
         
         //Number of yellow blocks label
         temp = Integer.toString(blocks[0].getNum_blocks());
-        numYellow_label = utility.create_label(500, 101, "Number of Yellow Blocks: " + temp, 200, 25, Color.WHITE);
+        numYellow_label = util.create_label(500, 101, "Number of Yellow Blocks: " + temp, 200, 25, Color.WHITE);
         test.add(numYellow_label);
         
         //Number of orange blocks label
 		temp = Integer.toString(blocks[1].getNum_blocks());
-        numOrange_label = utility.create_label(500, 141, "Number of Orange Blocks: " + temp, 200, 25, Color.WHITE);
+        numOrange_label = util.create_label(500, 141, "Number of Orange Blocks: " + temp, 200, 25, Color.WHITE);
         test.add(numOrange_label);
         
         //Number of red blocks label
 		temp = Integer.toString(blocks[2].getNum_blocks());
-        numRed_label = utility.create_label(500, 181, "Number of Red Blocks: " + temp, 200, 25, Color.WHITE);
+        numRed_label = util.create_label(500, 181, "Number of Red Blocks: " + temp, 200, 25, Color.WHITE);
         test.add(numRed_label);
         
         //Number of purple blocks label
         temp = Integer.toString(blocks[3].getNum_blocks());
-        numPurple_label = utility.create_label(500, 221, "Number of Purple Blocks: " + temp, 200, 25, Color.WHITE);
+        numPurple_label = util.create_label(500, 221, "Number of Purple Blocks: " + temp, 200, 25, Color.WHITE);
         test.add(numPurple_label);
         
         //Number of blue blocks label
         temp = Integer.toString(blocks[4].getNum_blocks());
-        numBlue_label = utility.create_label(500, 261, "Number of Blue Blocks: " + temp, 200, 25, Color.WHITE);
+        numBlue_label = util.create_label(500, 261, "Number of Blue Blocks: " + temp, 200, 25, Color.WHITE);
         test.add(numBlue_label);
+        
+        
         
 	}
 	

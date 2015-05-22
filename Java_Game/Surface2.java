@@ -46,14 +46,13 @@ class Surface2 extends JPanel implements ActionListener {
     {
     	//x should stay the same, y is 8 higher than label y
     	//Add more colors later
-    	g.setColor(SOFT_YELLOW);
-    	
+    	g.setColor(SOFT_YELLOW); 	
     	g.fillRect(480, 109, 10, 10); 
-    	g.setColor(SOFT_ORANGE);
     	
+    	g.setColor(SOFT_ORANGE);  	
     	g.fillRect(480, 149, 10, 10);
-    	g.setColor(SOFT_RED);
     	
+    	g.setColor(SOFT_RED); 	
     	g.fillRect(480, 189, 10, 10);
     	
     	g.setColor(SOFT_PURPLE);
