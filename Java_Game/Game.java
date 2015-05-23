@@ -18,6 +18,7 @@
  * 			general message: You will not earn money if t he game is paused!
  * 
  * 
+ * 
  *  Long term TODO: 
  *   - Be able to save the game state (into a file) and then have the user
  *     have the option to load the game back up when they are done.
@@ -35,6 +36,7 @@
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
@@ -58,7 +60,7 @@ public class Game extends JPanel{
 
 	//Graphic attributes
 	private JFrame frame;
-	private Surface2 test;
+	private GamePanel test;
 	private WelcomeScreen welcome_screen;
 	
 	private JButton lemon_button, orange_button, apple_button, grape_button, blueberry_button;
@@ -482,7 +484,7 @@ public class Game extends JPanel{
 	{
 		util.waitMili(100);
 		//Sets up the game panel
-		test = new Surface2(grid);
+		test = new GamePanel(grid);
 		test.setLayout(null);
 		test.setBackground(Color.BLACK);
 			
@@ -907,7 +909,12 @@ public class Game extends JPanel{
 	public void drawButtons()
 	{
 		Font smallButtonFont = new Font("ARIEL", Font.PLAIN, 10);
-		ImageIcon img = new ImageIcon("C:\\Users\\Brandon\\git\\Java_Game\\Lemon_Button.png");
+		Color gray4 = new Color(32,32,32);
+		Color SOFT_YELLOW = new Color(253,253,75);
+		ImageIcon img = new ImageIcon("C:\\Users\\Brandon\\workspace\\JBGame\\src\\button.png");
+		
+		
+		GradientPaint redtowhite = new GradientPaint(0,0,Color.RED,100, 0,Color.WHITE);
 		
 	    /*
 	     * Button to buy lemons
@@ -917,12 +924,14 @@ public class Game extends JPanel{
 	    test.add(lemon_button);
 	    lemon_button.setBounds(15,FIRST_BUTTON, 100, 25);
 
+	    
 	    lemon_button.setVisible(true);
 	    lemon_button.setText(lemon.getName());
 	    lemon_button.addActionListener(main_listener);
 	    lemon_button.setActionCommand("lemon");
-	    lemon_button.setBackground(Color.GRAY);
-	    lemon_button.setBorderPainted(false);
+	    lemon_button.setBackground(Color.GRAY.brighter());
+	    lemon_button.setForeground(Color.BLACK);
+	    lemon_button.setFocusable(false);
 
 	    /*
 	     * Button to buy oranges
@@ -933,8 +942,8 @@ public class Game extends JPanel{
 	    orange_button.setBounds(15, FIRST_BUTTON+35,100,25);
 	    orange_button.setVisible(true);
 	    orange_button.setText(oranges.getName());  
-	    orange_button.setBackground(Color.GRAY);
-	    orange_button.setBorderPainted(false);
+	    orange_button.setBackground(Color.GRAY.brighter());
+	    orange_button.setForeground(Color.BLACK);
 	    orange_button.addActionListener(main_listener);
 	    orange_button.setActionCommand("orange");
 	    
@@ -949,8 +958,8 @@ public class Game extends JPanel{
 	    apple_button.setText(apple.getName());  
 	    apple_button.addActionListener(main_listener);
 	    apple_button.setActionCommand("apple");
-	    apple_button.setBackground(Color.GRAY);
-	    apple_button.setBorderPainted(false);
+	    apple_button.setBackground(Color.GRAY.brighter());
+	    apple_button.setForeground(Color.BLACK);
 	    
 	    /*
 	     * Button to buy grapes
@@ -963,8 +972,8 @@ public class Game extends JPanel{
 	    grape_button.setText(grape.getName());  
 	    grape_button.addActionListener(main_listener);
 	    grape_button.setActionCommand("grape");
-	    grape_button.setBackground(Color.GRAY);
-	    grape_button.setBorderPainted(false);
+	    grape_button.setBackground(Color.GRAY.brighter());
+	    grape_button.setForeground(Color.BLACK);
 	    
 	    /*
 	     * Button to buy blueberries
@@ -977,8 +986,8 @@ public class Game extends JPanel{
 	    blueberry_button.setText(blueberry.getName());  
 	    blueberry_button.addActionListener(main_listener);
 	    blueberry_button.setActionCommand("blueberry");
-	    blueberry_button.setBackground(Color.GRAY);
-	    blueberry_button.setBorderPainted(false);
+	    blueberry_button.setBackground(Color.GRAY.brighter());
+	    blueberry_button.setForeground(Color.BLACK);
 	    
 	    
 	    /*
@@ -991,6 +1000,8 @@ public class Game extends JPanel{
 	    upgradeYBlocks_button.setFont(smallButtonFont);
 	    upgradeYBlocks_button.setVisible(true);
 	    upgradeYBlocks_button.setText("Upgrade!");
+	    upgradeYBlocks_button.setBackground(Color.GRAY.brighter());
+	    upgradeYBlocks_button.setForeground(Color.BLACK);
 	    upgradeYBlocks_button.addActionListener(main_listener);
 	    upgradeYBlocks_button.setActionCommand("upgradeYellow");
 	    
@@ -1004,6 +1015,8 @@ public class Game extends JPanel{
 	    upgradeOBlocks_button.setFont(smallButtonFont);
 	    upgradeOBlocks_button.setVisible(true);
 	    upgradeOBlocks_button.setText("Upgrade!");
+	    upgradeOBlocks_button.setBackground(Color.GRAY.brighter());
+	    upgradeOBlocks_button.setForeground(Color.BLACK);
 	    upgradeOBlocks_button.addActionListener(main_listener);
 	    upgradeOBlocks_button.setActionCommand("upgradeOrange");
 	    
@@ -1017,6 +1030,8 @@ public class Game extends JPanel{
 	    upgradeRBlocks_button.setFont(smallButtonFont);
 	    upgradeRBlocks_button.setVisible(true);
 	    upgradeRBlocks_button.setText("Upgrade!");
+	    upgradeRBlocks_button.setBackground(Color.GRAY.brighter());
+	    upgradeRBlocks_button.setForeground(Color.BLACK);
 	    upgradeRBlocks_button.addActionListener(main_listener);
 	    upgradeRBlocks_button.setActionCommand("upgradeRed");
 	    
@@ -1030,6 +1045,8 @@ public class Game extends JPanel{
 	    upgradePBlocks_button.setFont(smallButtonFont);
 	    upgradePBlocks_button.setVisible(true);
 	    upgradePBlocks_button.setText("Upgrade!");
+	    upgradePBlocks_button.setBackground(Color.GRAY.brighter());
+	    upgradePBlocks_button.setForeground(Color.BLACK);
 	    upgradePBlocks_button.addActionListener(main_listener);
 	    upgradePBlocks_button.setActionCommand("upgradePurple");
 	
@@ -1043,6 +1060,8 @@ public class Game extends JPanel{
 	    upgradeBBlocks_button.setFont(smallButtonFont);
 	    upgradeBBlocks_button.setVisible(true);
 	    upgradeBBlocks_button.setText("Upgrade!");
+	    upgradeBBlocks_button.setBackground(Color.GRAY.brighter());
+	    upgradeBBlocks_button.setForeground(Color.BLACK);
 	    upgradeBBlocks_button.addActionListener(main_listener);
 	    upgradeBBlocks_button.setActionCommand("upgradeBlue");
 	    
@@ -1053,6 +1072,8 @@ public class Game extends JPanel{
 	    upgrade_menu_button.setBounds(480, 35, 180, 25);
 	    upgrade_menu_button.setVisible(true);
 	    upgrade_menu_button.setText("Upgrade Menu");
+	    upgrade_menu_button.setBackground(Color.GRAY.brighter());
+	    upgrade_menu_button.setForeground(Color.BLACK);
 	    upgrade_menu_button.addActionListener(main_listener);
 	    upgrade_menu_button.setActionCommand("create_upgrade_menu");
 	    

@@ -29,7 +29,7 @@ public class Driver {
 		for(int i=0;i<100000;i++)
 		{
 
-			util.waitMili(122);	
+			util.waitMili(80);	
 			game.showStats();
 				
 		}

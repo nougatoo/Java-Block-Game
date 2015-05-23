@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -8,6 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 
 public class UpgradeMenu extends JPanel{
@@ -18,9 +20,10 @@ public class UpgradeMenu extends JPanel{
 	private int uMenu_choice = -1;
 	private volatile boolean choice_made = false;
 	
-	private JFrame upgrade_menu_frame;
 	
-	private JPanel upgrade_menu_panel;
+	private JFrame upgrade_menu_frame;
+	private JScrollPane scroll;
+	private UpgradePanel upgrade_menu_panel;
 	
 	private JButton upgrade0_button;
 	private JLabel upgrade0_label;
@@ -39,7 +42,7 @@ public class UpgradeMenu extends JPanel{
 	private int FIRST_BUTTON_X = 200;
 	private int FIRST_BUTTON_Y = 100;
 	
-	private final int WIDTH = 300;
+	private final int WIDTH = 325;
 	private final int HEIGHT = 500;
 	
 	/*
@@ -76,26 +79,25 @@ public class UpgradeMenu extends JPanel{
         upgrade_menu_frame = new JFrame("Upgrade Menu");
 		upgrade_menu_frame.setSize(WIDTH, HEIGHT);
 	    upgrade_menu_frame.setResizable(false);
-		//upgrade_menu_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		upgrade_menu_frame.setLocation(100, 60);
-		
 		upgrade_menu_frame.setVisible(true);
 		
-
-		
-		upgrade_menu_panel = new UpgradeMenuDrawing();
+		//Creates a panel
+		upgrade_menu_panel = new UpgradePanel();
 		upgrade_menu_panel.setLayout(null);
-		upgrade_menu_panel.setBackground(Color.BLACK);
-		upgrade_menu_panel.setVisible(true);
-		upgrade_menu_frame.add(upgrade_menu_panel);
-
 		
+		//Creates a scroll pane with the panel that was just created
+        scroll = new JScrollPane(upgrade_menu_panel);
+        scroll.setBackground(Color.BLACK);
+	
 
 		create_buttons();
 		create_labels();
 		
+		//Add scroll pane (thats made up of upgardePanel) to our upgrade frame
+		upgrade_menu_frame.add(scroll);
 		
-		//Set visible at the very end
+		
 		return true;
 
 		
@@ -194,21 +196,35 @@ public class UpgradeMenu extends JPanel{
 	
 	public void tearDown()
 	{
-		upgrade_menu_frame.remove(upgrade_menu_panel);
+		upgrade_menu_frame.remove(scroll);
 		upgrade_menu_frame.repaint();
 		upgrade_menu_frame.setVisible(false);
 	}
 
 
-	
-
-
-	/*
-	 * Drawing nested class that draws the small blocks to show costs
-	 */
-    class UpgradeMenuDrawing extends JPanel{
-    	
     
+    public class TestScroll extends JScrollPane {
+    	
+    	private int FIRST_BUTTON_X = 200;
+    	private int FIRST_BUTTON_Y = 100;
+    	
+    	private final int WIDTH = 325;
+    	private final int HEIGHT = 500;
+    	
+    	/*
+    	 * Colors needed/used
+    	 */
+    	private Color SOFT_YELLOW = new Color(253,253,75);
+    	private Color SOFT_ORANGE = new Color(255,126,53);
+    	private Color SOFT_RED = new Color(255,50,50);
+    	private Color DARK_ORANGE = new Color(255,140,0);
+    	private Color SOFT_PURPLE = new Color(204,102,204);
+    	private Color SOFT_BLUE = new Color(100,100,255);
+    	
+    	public TestScroll(JPanel upgrade_menu_panel)
+    	{
+    		
+    	}
     	
     	private void doDrawing(Graphics g) {
     		
@@ -249,7 +265,6 @@ public class UpgradeMenu extends JPanel{
             
             doDrawing(g);
         }
-    	
 
     }
 
