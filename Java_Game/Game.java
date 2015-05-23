@@ -35,21 +35,17 @@
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 
-import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.border.Border;
-import javax.swing.event.AncestorListener;
+
 
 
 
@@ -911,6 +907,8 @@ public class Game extends JPanel{
 	public void drawButtons()
 	{
 		Font smallButtonFont = new Font("ARIEL", Font.PLAIN, 10);
+		ImageIcon img = new ImageIcon("C:\\Users\\Brandon\\git\\Java_Game\\Lemon_Button.png");
+		
 	    /*
 	     * Button to buy lemons
 	     * On press: buys a lemon and updates all things to show that
@@ -918,11 +916,13 @@ public class Game extends JPanel{
 	    lemon_button = new JButton(); 
 	    test.add(lemon_button);
 	    lemon_button.setBounds(15,FIRST_BUTTON, 100, 25);
+
 	    lemon_button.setVisible(true);
 	    lemon_button.setText(lemon.getName());
 	    lemon_button.addActionListener(main_listener);
 	    lemon_button.setActionCommand("lemon");
-	    
+	    lemon_button.setBackground(Color.GRAY);
+	    lemon_button.setBorderPainted(false);
 
 	    /*
 	     * Button to buy oranges
@@ -933,6 +933,8 @@ public class Game extends JPanel{
 	    orange_button.setBounds(15, FIRST_BUTTON+35,100,25);
 	    orange_button.setVisible(true);
 	    orange_button.setText(oranges.getName());  
+	    orange_button.setBackground(Color.GRAY);
+	    orange_button.setBorderPainted(false);
 	    orange_button.addActionListener(main_listener);
 	    orange_button.setActionCommand("orange");
 	    
@@ -947,6 +949,8 @@ public class Game extends JPanel{
 	    apple_button.setText(apple.getName());  
 	    apple_button.addActionListener(main_listener);
 	    apple_button.setActionCommand("apple");
+	    apple_button.setBackground(Color.GRAY);
+	    apple_button.setBorderPainted(false);
 	    
 	    /*
 	     * Button to buy grapes
@@ -959,6 +963,8 @@ public class Game extends JPanel{
 	    grape_button.setText(grape.getName());  
 	    grape_button.addActionListener(main_listener);
 	    grape_button.setActionCommand("grape");
+	    grape_button.setBackground(Color.GRAY);
+	    grape_button.setBorderPainted(false);
 	    
 	    /*
 	     * Button to buy blueberries
@@ -971,6 +977,8 @@ public class Game extends JPanel{
 	    blueberry_button.setText(blueberry.getName());  
 	    blueberry_button.addActionListener(main_listener);
 	    blueberry_button.setActionCommand("blueberry");
+	    blueberry_button.setBackground(Color.GRAY);
+	    blueberry_button.setBorderPainted(false);
 	    
 	    
 	    /*
