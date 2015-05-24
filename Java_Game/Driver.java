@@ -14,10 +14,10 @@ public class Driver {
 		
 		 /* Creates a welcome screen and waits until the user has made a choice */
 		 
-		//welcome_screen = new WelcomeLogic();
-		//welcome_screen.createWelcomeScreen();
-		//choice = welcome_screen.waitForChoice();
-		//welcome_screen.tearDown();
+		welcome_screen = new WelcomeLogic();
+		welcome_screen.createWelcomeScreen();
+		choice = welcome_screen.waitForChoice();
+		welcome_screen.tearDown();
 		
 		
 		
