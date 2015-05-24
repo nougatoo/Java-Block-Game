@@ -26,27 +26,27 @@ public class MainListener implements ActionListener{
 		if("lemon".equals(e.getActionCommand()))
 		{
 			button = 1;
-			game.handlePress(button);
+			game.handleFruitPress(button);
 		}
 		else if("orange".equals(e.getActionCommand())) //add else
 		{
 			button = 2;
-			game.handlePress(button);
+			game.handleFruitPress(button);
 		}
 		else if("apple".equals(e.getActionCommand()))
 		{
 			button = 3;
-			game.handlePress(button);
+			game.handleFruitPress(button);
 		}
 		else if("grape".equals(e.getActionCommand()))
 		{
 			button = 4;
-			game.handlePress(button);
+			game.handleFruitPress(button);
 		}
 		else if("blueberry".equals(e.getActionCommand()))
 		{
 			button = 5;
-			game.handlePress(button);
+			game.handleFruitPress(button);
 		}
 		else if("upgradeYellow".equals(e.getActionCommand()))
 		{
@@ -72,19 +72,24 @@ public class MainListener implements ActionListener{
 			game.upgradeBlocks(block);
 			
 		}
-		else if("upgrade0_chosen".equals(e.getActionCommand()))
+		else if("boost0_chosen".equals(e.getActionCommand()))
 		{
-			game.handleUpgradeMenuChoice(0);
+			game.handleBoostMenuChoice(0);
 			
 		}
-		else if("upgrade1_chosen".equals(e.getActionCommand()))
+		else if("boost1_chosen".equals(e.getActionCommand()))
 		{
-			game.handleUpgradeMenuChoice(1);
+			game.handleBoostMenuChoice(1);
 			
 		}
-		else if("upgrade2_chosen".equals(e.getActionCommand()))
+		else if("boost2_chosen".equals(e.getActionCommand()))
 		{
-			game.handleUpgradeMenuChoice(2);
+			game.handleBoostMenuChoice(2);
+			
+		}
+		else if("create_boost_menu".equals(e.getActionCommand()))
+		{
+        	game.createBoostMenu();
 			
 		}
 		else if("create_upgrade_menu".equals(e.getActionCommand()))

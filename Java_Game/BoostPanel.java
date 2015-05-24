@@ -1,14 +1,14 @@
 import java.awt.Color;
 import java.awt.Dimension;
-
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.LineBorder;
 
-
-public class UpgradePanel extends JPanel {
+public class BoostPanel extends JPanel {
 	
-
 	private int FIRST_BUTTON_X = 200;
 	private int FIRST_BUTTON_Y = 100;
 	
@@ -25,7 +25,7 @@ public class UpgradePanel extends JPanel {
 	private Color SOFT_PURPLE = new Color(204,102,204);
 	private Color SOFT_BLUE = new Color(100,100,255);
 
-    public UpgradePanel() {
+    public BoostPanel() {
     	
     	setBackground(Color.BLACK);
     	setIgnoreRepaint(true);
@@ -36,21 +36,16 @@ public class UpgradePanel extends JPanel {
     private void doDrawing(Graphics g) {
 		
 		g.setColor(Color.WHITE);
-		g.drawString("Upgrades", 120, 18);
+		g.drawString("Boosts", 120, 18);
 		
-		
-		
-	   	g.setColor(SOFT_PURPLE); 	
+	   	g.setColor(SOFT_YELLOW); 	
     	g.fillRect(80, FIRST_BUTTON_Y-2, 10, 10); 
     	
-	   	g.setColor(SOFT_BLUE); 	
+	   	g.setColor(SOFT_ORANGE); 	
     	g.fillRect(80, FIRST_BUTTON_Y+86, 10, 10); 
     	
-    	/*
 	   	g.setColor(SOFT_RED); 	
-    	g.fillRect(80, FIRST_BUTTON_Y+174, 10, 10);
-    	*/
-    	 
+    	g.fillRect(80, FIRST_BUTTON_Y+174, 10, 10); 
     	
     	/*
     	 * White lines that separate the upgrades
@@ -64,10 +59,8 @@ public class UpgradePanel extends JPanel {
     	g.setColor(Color.WHITE);
     	g.drawLine(0, FIRST_BUTTON_Y+110, 300, FIRST_BUTTON_Y+110 );
     	
-    	/*
     	g.setColor(Color.WHITE);
     	g.drawLine(0, FIRST_BUTTON_Y+200, 300, FIRST_BUTTON_Y+200 );
-    	*/
     	
     	
 	}

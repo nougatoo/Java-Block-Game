@@ -17,6 +17,8 @@
  * 		- Add a pause button
  * 			general message: You will not earn money if t he game is paused!
  * 
+ * 		- Add upgrade functionality (boosts is done)
+ * 
  * 
  * 
  *  Long term TODO: 
@@ -47,11 +49,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-
-
-
-
 
 
 public class Game extends JPanel{
@@ -118,27 +115,27 @@ public class Game extends JPanel{
 	final int HEIGHT = 600;
 	final int FIRST_BUTTON = 450;
 	
-	/* 
-	 * Upgrade menu stuff
-	 */
-	private JButton upgrade_menu_button;
-	private JFrame upgrade_menu_frame;
-	private JPanel upgrade_menu_panel;
-	
-	private UpgradeMenu menu;
 	private MainListener main_listener = new MainListener(this);
 	
-	private volatile int menu_choice = -1;
-    boolean upgrade_menu_open = false;
-    
-    private double upgrade_multiplier;
-    private boolean upgrade_multiplier_on;
-	private double upgrade_start_time;
-	private double upgrade_end_time;
+	/* 
+	 * Boost menu stuff
+	 */
+	private JButton boost_menu_button;
+	private BoostMenu boost_menu;
+    boolean boost_menu_open = false;    
+    private double boost_multiplier;
+    private boolean boost_multiplier_on;
+	private double boost_start_time;
 	private double current_time;
-	private int[] upgrade_durations = new int[3]; //CHANGE WHEN ADD MORE UPGRADES\
-	private int upgrade_durations_index;
+	private int[] boost_durations = new int[3]; //CHANGE WHEN ADD MORE UPGRADES\
+	private int boost_durations_index;
 	
+	
+	/*
+	 * Upgrade window stuff
+	 */
+	private UpgradeMenu upgrade_menu;
+	private JButton upgrade_menu_button;
 	
 	
 	
@@ -249,12 +246,12 @@ public class Game extends JPanel{
 		start_time = System.currentTimeMillis();
 		
 		//For the upgrade system
-		upgrade_multiplier = 1;
-		upgrade_multiplier_on = false;
-		upgrade_durations[0] = 3000;
-		upgrade_durations[1] = 5000;
-		upgrade_durations[2] = 7000;
-		upgrade_durations_index = 0;
+		boost_multiplier = 1;
+		boost_multiplier_on = false;
+		boost_durations[0] = 3000;
+		boost_durations[1] = 5000;
+		boost_durations[2] = 7000;
+		boost_durations_index = 0;
 		return true;
 	 }
 	
@@ -285,7 +282,7 @@ public class Game extends JPanel{
 		 * but only if there is a multiplier active
 		 */
 		current_time = System.currentTimeMillis();
-		if(current_time - upgrade_start_time > upgrade_durations[upgrade_durations_index] && upgrade_multiplier_on == true)
+		if(current_time - boost_start_time > boost_durations[boost_durations_index] && boost_multiplier_on == true)
 		{
 			System.out.println("should not see");
 			endUpgradeMultiplier();
@@ -499,10 +496,16 @@ public class Game extends JPanel{
 		
 	}
 	
+	public void createBoostMenu()
+	{
+		boost_menu = new BoostMenu();
+		boost_menu.createMenu();
+	}
+	
 	public void createUpgradeMenu()
 	{
-		menu = new UpgradeMenu();
-		menu.createMenu();
+		upgrade_menu = new UpgradeMenu();
+		upgrade_menu.createMenu();
 	}
 	
 	/*
@@ -602,35 +605,42 @@ public class Game extends JPanel{
 				}
 				
 			}
+
 		    
 			test.repaint(); //Color the grid that we just changed
-		}//End of if statement	
+	    	updateGeneralMessages("Your blocks have been upgraded!");
+		}
+	    else
+	    {
+	    	updateGeneralMessages("You do not have enough blocks to upgrade!");
+	    }//End of if statement	
 	}
 	
 	/*
 	 * When a buy button is pressed, this method "buys" it for the user
 	 * and updates everything related to it
 	 */
-	public void handlePress(int num_button)
+	public void handleFruitPress(int num_button)
 	{
 		int choice;
 		choice = num_button-1;
 		
 		if((current_money >= fruits[choice].getPrice()))
 		{
-			money_rate = ((money_rate/upgrade_multiplier) + fruits[choice].getRate())*upgrade_multiplier;
+			money_rate = ((money_rate/boost_multiplier) + fruits[choice].getRate())*boost_multiplier;
 			current_money -= fruits[choice].getPrice();
 			fruits[choice].setPrice(Math.pow(fruits[choice].getPrice(), 1.04));
 			
 			fruits[choice].setCount(fruits[choice].getCount() +1 );
 		
-			if(upgrade_multiplier_on == false)
+			if(boost_multiplier_on == false)
 			{
 				changeBlockGenMultiplier();
 			}
 			updateMoneyLabels();
 			updatePrice(choice);
 			
+			updateGeneralMessages("You've purchased " + fruits[choice].getName() +"!");
 		}
 		
 	}
@@ -642,12 +652,12 @@ public class Game extends JPanel{
 	 * Function: Changes the upgrade multiplier, and stores the time that it started at
 	 * 	 		 then multiplies current rate by the multiplier
 	 */
-	public void handleUpgradeMenuChoice(int choice) {
+	public void handleBoostMenuChoice(int choice) {
 		
 		int numChanged = 0;
 		int[] findColorsToRemove = new int[400];
 		int index = 0;
-		upgrade_menu_open = false;
+		boost_menu_open = false;
 		//menu.tearDown(); //Takes down the upgrade menu
 		
 		/*
@@ -655,7 +665,7 @@ public class Game extends JPanel{
 		 * we scan the grid and find the first 10 red blocks and change them to black and update
 		 * numBlocks as nessicary
 		 */
-		if(choice == 0 && upgrade_multiplier_on == false && blocks[choice].getNum_blocks() >= 250)
+		if(choice == 0 && boost_multiplier_on == false && blocks[choice].getNum_blocks() >= 250)
 		{
 			
 			//Change if max grid size increases
@@ -674,16 +684,16 @@ public class Game extends JPanel{
 			blocks[choice].setNum_blocks(blocks[choice].getNum_blocks()-250); //we should have removed 10 blocks by now so so update numBlocks
 			updateEmptySpots(); //and update the empty spots
 			
-			upgrade_durations_index = 0;
-			upgrade_multiplier = 2;
-			upgrade_start_time = System.currentTimeMillis();
-			upgrade_multiplier_on = true;
-			money_rate = money_rate*upgrade_multiplier; 
+			boost_durations_index = 0;
+			boost_multiplier = 2;
+			boost_start_time = System.currentTimeMillis();
+			boost_multiplier_on = true;
+			money_rate = money_rate*boost_multiplier; 
 			
 			updateGeneralMessages("Upgrade Successfully Purchased! x2 for 3 seconds!");
 			updateMoneyLabels();
 		}		
-		else if(choice == 1 && upgrade_multiplier_on == false && blocks[choice].getNum_blocks() >= 125)
+		else if(choice == 1 && boost_multiplier_on == false && blocks[choice].getNum_blocks() >= 125)
 		{
 			
 			//Change if max grid size increases
@@ -702,16 +712,16 @@ public class Game extends JPanel{
 			blocks[choice].setNum_blocks(blocks[choice].getNum_blocks()-125); //we should have removed 10 blocks by now so so update numBlocks
 			updateEmptySpots(); //and update the empty spots
 			
-			upgrade_durations_index = 1;
-			upgrade_multiplier = 4;
-			upgrade_start_time = System.currentTimeMillis();
-			upgrade_multiplier_on = true;
-			money_rate = money_rate*upgrade_multiplier; 
+			boost_durations_index = 1;
+			boost_multiplier = 4;
+			boost_start_time = System.currentTimeMillis();
+			boost_multiplier_on = true;
+			money_rate = money_rate*boost_multiplier; 
 			
 			updateGeneralMessages("Upgrade Successfully Purchased! x4 for 5 seconds!");
 			updateMoneyLabels();
 		}
-		else if(choice == 2 && upgrade_multiplier_on == false && blocks[choice].getNum_blocks() >= 60) //THIS ONE SHOULD REQUIRE THE USER HAVE BEEN PAST A CERTAIN BREAKPOIT
+		else if(choice == 2 && boost_multiplier_on == false && blocks[choice].getNum_blocks() >= 60) //THIS ONE SHOULD REQUIRE THE USER HAVE BEEN PAST A CERTAIN BREAKPOIT
 		{
 			
 			//Change if max grid size increases
@@ -730,18 +740,18 @@ public class Game extends JPanel{
 			blocks[choice].setNum_blocks(blocks[choice].getNum_blocks()-60); //we should have removed 10 blocks by now so so update numBlocks
 			updateEmptySpots(); //and update the empty spots
 			
-			upgrade_durations_index = 2;
-			upgrade_multiplier = 8;
-			upgrade_start_time = System.currentTimeMillis();
-			upgrade_multiplier_on = true;
-			money_rate = money_rate*upgrade_multiplier; 
+			boost_durations_index = 2;
+			boost_multiplier = 8;
+			boost_start_time = System.currentTimeMillis();
+			boost_multiplier_on = true;
+			money_rate = money_rate*boost_multiplier; 
 			
 			updateGeneralMessages("Upgrade Successfully Purchased! x8 for 7 seconds!");
 			updateMoneyLabels();
 		}
 		
 		
-		else if(upgrade_multiplier_on == true)
+		else if(boost_multiplier_on == true)
 		{
 			updateGeneralMessages("Only 1 block upgarde multiplier can be active at a time");
 		}
@@ -755,9 +765,9 @@ public class Game extends JPanel{
 	
 	public void endUpgradeMultiplier()
 	{
-		upgrade_multiplier_on = false;
-		money_rate = money_rate/upgrade_multiplier; 
-		upgrade_multiplier = 1;
+		boost_multiplier_on = false;
+		money_rate = money_rate/boost_multiplier; 
+		boost_multiplier = 1;
 		updateGeneralMessages("Upgrade Ended!");
 		updateMoneyLabels();
 	}
@@ -1066,12 +1076,24 @@ public class Game extends JPanel{
 	    upgradeBBlocks_button.setActionCommand("upgradeBlue");
 	    
 	    
-        //Creates a label with a border\
+       /*
+        * Creates boost menu
+        */
+	    boost_menu_button = new JButton();
+	    test.add(boost_menu_button);
+	    boost_menu_button.setBounds(480, 35, 125, 25);
+	    boost_menu_button.setVisible(true);
+	    boost_menu_button.setText("Boosts Menu");
+	    boost_menu_button.setBackground(Color.GRAY.brighter());
+	    boost_menu_button.setForeground(Color.BLACK);
+	    boost_menu_button.addActionListener(main_listener);
+	    boost_menu_button.setActionCommand("create_boost_menu");
+	    
 	    upgrade_menu_button = new JButton();
 	    test.add(upgrade_menu_button);
-	    upgrade_menu_button.setBounds(480, 35, 180, 25);
+	    upgrade_menu_button.setBounds(630, 35, 125, 25);
 	    upgrade_menu_button.setVisible(true);
-	    upgrade_menu_button.setText("Upgrade Menu");
+	    upgrade_menu_button.setText("Upgrades Menu");
 	    upgrade_menu_button.setBackground(Color.GRAY.brighter());
 	    upgrade_menu_button.setForeground(Color.BLACK);
 	    upgrade_menu_button.addActionListener(main_listener);
