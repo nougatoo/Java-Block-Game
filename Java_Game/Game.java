@@ -3,7 +3,6 @@
  * Created By: Brandon Brien
  * 
  * A game where users can buy things in order to get more money
- * Basically a copy of adventure capitalist
  * 
  * Blocks are used to purchase special upgrades
  * hopefully they can be brought up in a menu (the choices)
@@ -17,23 +16,17 @@
  * 		- Add a pause button
  * 			general message: You will not earn money if t he game is paused!
  * 
- * 		- Add upgrade functionality (boosts is done)
  * 
  * 
  * 
  *  Long term TODO: 
- *   - Be able to save the game state (into a file) and then have the user
- *     have the option to load the game back up when they are done.
- *  
- *   - Have a welcome screen that ask the users if they wanted to continue their game or 
- *     start a new one
- *     
- *   - users spend their blocks on upgrades (maybe some upgrades require a certain amount of 
- *     money per second to prevent abusing right before a break point
  *     
  *   - create a stats section!
+ *   
+ *   - Have special blocks that pop up (with increasing frequency) that let the user click on them
+ *     and they receive some kind of bonus!
  *     
- * Last edited: May 17th, 2015
+ * Last edited: May 25th, 2015
  */
 
 import java.awt.Color;
@@ -42,6 +35,14 @@ import java.awt.GradientPaint;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.text.DecimalFormat;
 
 import javax.swing.ImageIcon;
@@ -51,8 +52,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 
-public class Game extends JPanel{
-	
+public class Game implements Serializable{
+
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1668063172940490679L;
+
 	private Utilities util;
 
 	//Graphic attributes
@@ -78,6 +85,7 @@ public class Game extends JPanel{
 	private double total_money_made;
 	
 	private int game_type;
+
 	
 	/* 
 	 * Fruit Objects Neded
@@ -136,15 +144,28 @@ public class Game extends JPanel{
 	 */
 	private UpgradeMenu upgrade_menu;
 	private JButton upgrade_menu_button;
+	private int[] upgrade_multipliers = new int[2];
+	
+	private boolean stop_for_save = false;
 	
 	
+
+	/*
+	 * Save game stuff
+	 */
+	private JButton save_game_button;
+	private StatsWindow stats_window;
+	
+	
+	/*
+	 * Stats stuff
+	 */
+	
+	private JButton show_stats_button;
 	
 	public Game(int choice)
 	{
-		game_type = choice;
 	}
-	
-	
 	
 	/**
 	 * Initialize game state (non graphics)
@@ -204,7 +225,7 @@ public class Game extends JPanel{
 						100, 100000,
 						1000, 1000000,
 						10000, 10000000,
-						100000);
+						10000);
 		blocks[3] = purple;
 
 		blue = new Block(1, 1000,
@@ -212,7 +233,7 @@ public class Game extends JPanel{
 						100, 100000,
 						1000, 1000000,
 						10000, 10000000,
-						1000000);
+						100000);
 		blocks[4] = blue;
 
 
@@ -245,16 +266,39 @@ public class Game extends JPanel{
 		//how much the user has made
 		start_time = System.currentTimeMillis();
 		
-		//For the upgrade system
+		//For the Boost system
 		boost_multiplier = 1;
 		boost_multiplier_on = false;
 		boost_durations[0] = 3000;
 		boost_durations[1] = 5000;
 		boost_durations[2] = 7000;
 		boost_durations_index = 0;
+		
+		//For upgrade systems
+		upgrade_multipliers[0] = 3;
+		upgrade_multipliers[1] = 5;
+		
 		return true;
 	 }
 	
+	/*
+	 * When the game running is a loaded game, we have some extra work to do
+	 */
+	public void loadedGame()
+	{
+		start_time = System.currentTimeMillis();
+		
+		for(int i = 0;i<400;i++)
+		{
+			empty_Spots[i] = new Point(0,0);				
+		}
+		
+		updateEmptySpots();
+		
+		main_listener = new MainListener(this);
+		//shuffleEmptySpots();
+		
+	}
 	/*
 	 * - Does all the time interval calculations to add to current and total money
 	 * - Takes our total money and checks whether we are at a break point for a certain colored
@@ -329,6 +373,16 @@ public class Game extends JPanel{
 		temp = Double.toString(total_money_made);
 	    totalMon_label.setText("Total money made: $" + temp);
 	    
+	    if(stop_for_save == true )
+	    {
+	    	try {
+				saveGame();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    }
+	    
 	}
 	
 	/*
@@ -385,7 +439,6 @@ public class Game extends JPanel{
 	 */
 	public void handleBreakPoint(int currentColorBreak, int breakPointIndex, int numColor)
 	{
-		int i,j;
 		int numToColor;
 		int colored = 0;
 
@@ -417,7 +470,6 @@ public class Game extends JPanel{
 				{
 					shuffleEmptySpots();
 				}
-				
 				x = empty_Spots[last_Empty].x;
 				y = empty_Spots[last_Empty].y;
 				last_Empty--;
@@ -506,6 +558,12 @@ public class Game extends JPanel{
 	{
 		upgrade_menu = new UpgradeMenu();
 		upgrade_menu.createMenu();
+	}
+	
+	public void createStatsWindow()
+	{
+		stats_window = new StatsWindow();
+		stats_window.createWindow();
 	}
 	
 	/*
@@ -625,7 +683,8 @@ public class Game extends JPanel{
 		int choice;
 		choice = num_button-1;
 		
-		if((current_money >= fruits[choice].getPrice()))
+		if((current_money >= 
+				fruits[choice].getPrice()))
 		{
 			money_rate = ((money_rate/boost_multiplier) + fruits[choice].getRate())*boost_multiplier;
 			current_money -= fruits[choice].getPrice();
@@ -761,6 +820,71 @@ public class Game extends JPanel{
 		}
 		
 		
+	}
+	
+	/*
+	 * Must do all the checking to make sure the user can buy the upgrade
+	 */
+	public void handleUpgradeMenuChoice(int choice)
+	{
+		String str = "";
+		int numChanged = 0;
+		
+		if(choice == 0) //Purple blocks upgrade
+		{
+			if(blocks[3].getNum_blocks() >= 80)
+			{
+				money_rate = money_rate*upgrade_multipliers[choice];
+				blocks[3].setNum_blocks(blocks[3].getNum_blocks()-80);
+				updateMoneyLabels();
+
+				for(int i = 0; i<20;i++)
+				{
+					for(int j = 0;j<20;j++)
+					{
+						if(grid[i][j] == 4 && numChanged<80)
+						{
+							grid[i][j] = 0;
+							numChanged++;
+						}
+					}
+				}
+				str = "You're money has been multiplied by x" + upgrade_multipliers[choice] + "!";
+			}
+			else
+			{
+				str = "You do not have enough blocks to purchase that!";
+			}
+		}
+		else if (choice == 1)
+		{
+			if(blocks[4].getNum_blocks() >= 50)
+			{
+				money_rate = money_rate*upgrade_multipliers[choice];
+				blocks[4].setNum_blocks(blocks[4].getNum_blocks()-50);
+				updateMoneyLabels();
+				str = "You're money has been multiplied by x" + upgrade_multipliers[choice] + "!";
+				
+				for(int i = 0; i<20;i++)
+				{
+					for(int j = 0;j<20;j++)
+					{
+						if(grid[i][j] == 5 && numChanged<80)
+						{
+							grid[i][j] = 0;
+							numChanged++;
+						}
+					}
+				}
+			}
+			else
+			{
+				str = "You do not have enough blocks to purchase that!";	
+			}
+		}
+		
+		updateGeneralMessages(str);
+		changeBlockGenMultiplier();
 	}
 	
 	public void endUpgradeMultiplier()
@@ -1099,6 +1223,33 @@ public class Game extends JPanel{
 	    upgrade_menu_button.addActionListener(main_listener);
 	    upgrade_menu_button.setActionCommand("create_upgrade_menu");
 	    
+	    /*
+	     * Save game button
+	     *
+	    save_game_button = new JButton();
+	    test.add(save_game_button);
+	    save_game_button.setBounds(200, 375, 125, 25);
+	    save_game_button.setVisible(true);
+	    save_game_button.setText("Save Game");
+	    save_game_button.setBackground(Color.GRAY.brighter());
+	    save_game_button.setForeground(Color.BLACK);
+	    save_game_button.addActionListener(main_listener);
+	    save_game_button.setActionCommand("save_game");
+	    */
+	    /*
+	     * show stats button
+	     */
+	    
+	    show_stats_button = new JButton();
+	    test.add(show_stats_button);
+	    show_stats_button.setBounds(200, 375, 125, 25);
+	    show_stats_button.setVisible(true);
+	    show_stats_button.setText("Show Stats");
+	    show_stats_button.setBackground(Color.GRAY.brighter());
+	    show_stats_button.setForeground(Color.BLACK);
+	    show_stats_button.addActionListener(main_listener);
+	    show_stats_button.setActionCommand("show_stats");
+	    
 	
 	
 	}
@@ -1146,17 +1297,17 @@ public class Game extends JPanel{
 		 */
         //Creates a label for total money made
         temp = Double.toString(total_money_made);
-        totalMon_label = util.create_label(125, 350, "Total Money Made: $" + temp, 250, 25, Color.WHITE);
+        totalMon_label = util.create_label(15, 350, "Total Money Made: $" + temp, 250, 25, Color.WHITE);
         test.add(totalMon_label);
 
         //Creates a label for the current money 
         temp = Double.toString(current_money);
-        currMon_label = util.create_label(125, 400, "Current money: $" + temp, 250, 25, Color.WHITE);
+        currMon_label = util.create_label(15, 400, "Current money: $" + temp, 250, 25, Color.WHITE);
         test.add(currMon_label);              
     
         //Creates a label for the current money rate
         temp = Double.toString(money_rate);
-        currRate_label = util.create_label(125, 375, "Current money rate: $" + temp, 250, 25, Color.WHITE);
+        currRate_label = util.create_label(15, 375, "Current money rate: $" + temp, 250, 25, Color.WHITE);
         test.add(currRate_label);
         
         
@@ -1251,6 +1402,32 @@ public class Game extends JPanel{
         
         
 	}
+	
+	public void saveGame() throws IOException
+	{
+		if(stop_for_save == false)
+		{
+			stop_for_save = true;
+			showStats();
+		}
+		
+		
+		File file = new File("savedGame3.txt");
+		file.delete();
+		
+		FileOutputStream fout = new FileOutputStream("savedGame3.txt");
+		//fout.write((new String()).getBytes());
+		
+		ObjectOutputStream oos = new ObjectOutputStream(fout);
+		oos.writeObject(this);
+		
+		fout.close();
+		oos.close();
+
+		stop_for_save = false;
+
+	}
+	
 	
 }
 

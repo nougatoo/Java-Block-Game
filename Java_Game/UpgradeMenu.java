@@ -161,7 +161,7 @@ public class UpgradeMenu extends JPanel{
          */
 		upgrade1_label = new JLabel();
 		upgrade_menu_panel.add(upgrade1_label);
-		upgrade1_label.setText("<html><center>Permanently multiply production by x10!</center></html>");
+		upgrade1_label.setText("<html><center>Permanently multiply production by x5!</center></html>");
 		upgrade1_label.setForeground(Color.WHITE);
 		upgrade1_label.setFont(description_font);
         upgrade1_label.setSize(150,40);

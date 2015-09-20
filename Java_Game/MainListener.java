@@ -1,8 +1,14 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.Serializable;
 
-public class MainListener implements ActionListener{
+public class MainListener implements ActionListener, Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7420046919359955467L;
 	private WelcomeLogic welcome_screen;
 	private static Game game; // game is static so that upgrade menu's listener and game's listener use the same game
 	private Utilities util;
@@ -87,6 +93,16 @@ public class MainListener implements ActionListener{
 			game.handleBoostMenuChoice(2);
 			
 		}
+		else if("upgrade0_chosen".equals(e.getActionCommand()))
+		{
+			game.handleUpgradeMenuChoice(0);
+			
+		}
+		else if("upgrade1_chosen".equals(e.getActionCommand()))
+		{
+			game.handleUpgradeMenuChoice(1);
+			
+		}
 		else if("create_boost_menu".equals(e.getActionCommand()))
 		{
         	game.createBoostMenu();
@@ -97,6 +113,23 @@ public class MainListener implements ActionListener{
         	game.createUpgradeMenu();
 			
 		}
+		else if("save_game".equals(e.getActionCommand()))
+		{
+        	try {
+				game.saveGame();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+		}
+		else if("show_stats".equals(e.getActionCommand()))
+		{
+        	game.createStatsWindow();
+			
+		}
+		
+		
 
 	}
 

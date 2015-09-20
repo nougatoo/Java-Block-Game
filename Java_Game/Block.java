@@ -1,9 +1,15 @@
 import java.awt.Point;
+import java.io.Serializable;
 import java.text.DecimalFormat;
 
 
-public class Block {
+public class Block implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5626792903649416039L;
+
 	private int num_blocks; //num blocks
 
 	private int breakpoint;

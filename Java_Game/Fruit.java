@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.io.Serializable;
 import java.text.DecimalFormat;
 
 import javax.swing.JButton;
@@ -7,7 +8,7 @@ import javax.swing.JLabel;
 /*
  * TODO: add get methods
  */
-public class Fruit {
+public class Fruit implements Serializable{
 	
 	private String name;
 	

@@ -1,11 +1,17 @@
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.Random;
 
 import javax.swing.JLabel;
 
 
-public class Utilities {
+public class Utilities implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1404830101963057122L;
+
 	/*
 	 * Input: integer for number of miliseconds to wait
 	 */
